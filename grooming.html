@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>Pet grooming CRM · Portals Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: a Portals shell bar (pick a business, pick a screen) over a large mockup stage, with a notes drawer. Single light look on purpose: these are product mockups. */
+:root{
+  --teal:#174C4F; --teal-ink:#0F3537; --paper:#F7F4ED; --card:#FFFFFF; --ink:#252D32; --muted:#55605F;
+  --line:#E4DED0; --soft:#FBF9F4; --coral:#C2533F; --sand:#EDE8DC;
+  --display:'Manrope',system-ui,sans-serif; --body:'Source Sans 3',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #2E5A88;outline-offset:2px}
+a{color:var(--teal)}
+.shell{max-width:1440px;margin:0 auto;padding-block:14px 40px;display:flex;flex-direction:column;gap:14px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--teal)}
+.brand b{font-family:var(--display);font-weight:800;font-size:21px;line-height:1}
+.brand small{display:block;font-family:var(--display);font-weight:700;font-size:12px;color:#3A4448;letter-spacing:.04em}
+.tag{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.spacer{flex:1}
+.notesbtn{min-height:44px;padding:0 16px;border-radius:10px;border:1.5px solid var(--teal);background:var(--card);color:var(--teal);font-weight:700;cursor:pointer}
+.picker{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.pick{flex:none;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+.pick i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.pick[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.views{display:flex;flex-wrap:wrap;gap:6px;padding:5px;border-radius:14px;background:var(--sand);align-self:flex-start}
+.view{min-height:44px;padding:0 16px;border:0;border-radius:10px;background:transparent;font-weight:700;cursor:pointer}
+.view[aria-pressed="true"]{background:var(--teal);color:#fff}
+.stagewrap{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.stage{flex:999 1 640px;min-width:0}
+.notes{flex:1 1 300px;max-width:420px;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.notes h2{margin:0;font-family:var(--display);font-size:18px}
+.notes p{margin:0;font-size:14px;color:var(--muted)}
+.notes textarea{width:100%;min-height:180px;font:16px var(--body);padding:10px 12px;border-radius:10px;border:1.5px solid #CFC8B8;background:var(--soft);resize:vertical}
+.notes .row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{min-height:44px;padding:0 16px;border-radius:10px;border:0;background:var(--coral);color:#fff;font-weight:700;cursor:pointer}
+.btn.ghost{background:var(--card);color:var(--ink);border:1.5px solid #D9D3C4}
+.saved{font-size:13px;color:#1F5C38;font-weight:700;min-height:18px}
+.allnotes{font-size:14px;max-height:200px;overflow:auto;background:var(--soft);border-radius:10px;padding:10px;white-space:pre-wrap;border:1px solid var(--line)}
+
+/* ---------- desk mockup ---------- */
+.desk{display:flex;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(23,76,79,.08);min-height:760px}
+.side{flex:1 1 220px;max-width:100%;padding:22px 14px;color:#F7F4ED;display:flex;flex-direction:column;gap:3px}
+.side .who{display:flex;align-items:center;gap:12px;padding:0 8px 18px}
+.mono{width:44px;height:44px;border-radius:10px;background:#F7F4ED;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;flex:none}
+.side .nm{font-family:var(--display);font-weight:800;font-size:16px;line-height:1.2}
+.side .kd{font-size:13px;opacity:.85}
+.navi{display:flex;align-items:center;padding:11px 14px;border-radius:10px;font-weight:600;color:#F7F4ED}
+.navi.on{background:rgba(247,244,237,.16);font-weight:700}
+.navi span{margin-left:auto;font-size:13px;font-weight:700}
+.main{flex:999 1 560px;min-width:0;padding:28px 32px;display:flex;flex-direction:column;gap:22px}
+.hd{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between}
+.hd p{margin:0;font-size:15px;color:var(--muted)}
+.hd h1{margin:4px 0 0;font-family:var(--display);font-weight:800;font-size:32px;text-wrap:balance}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.tile b{font-family:var(--display);font-weight:800;font-size:30px}
+.tile strong{font-size:16px}
+.tile span{font-size:14px;color:var(--muted)}
+.cols{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.panel h2{margin:0;font-family:var(--display);font-weight:800;font-size:19px}
+.left{flex:3 1 480px}
+.right{flex:2 1 300px;min-width:0;display:flex;flex-direction:column;gap:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid #D9D3C4;background:var(--card);font-weight:600;font-size:14px;cursor:pointer}
+.item{display:grid;grid-template-columns:64px minmax(0,1fr) minmax(120px,160px);gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--soft);border:1px solid #EEE8DA}
+.item .t{font-family:var(--display);font-weight:700;font-size:15px}
+.item .w{font-weight:700}
+.item .w small{font-weight:400;color:var(--muted);font-size:14px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.bdg{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog div{height:8px}
+.stat{font-size:13px;font-weight:700}
+.vs{padding:0;overflow:hidden}
+.vs h2{padding:18px 20px 10px}
+.vsg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.vsg>div{padding:14px 20px 18px;display:flex;flex-direction:column;gap:8px}
+.vsg .lab{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.kv{display:flex;justify-content:space-between;gap:10px;font-variant-numeric:tabular-nums}
+.saved-h{margin-top:4px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.16);font-weight:700}
+.rowx{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.rowx small{display:block;color:var(--muted);font-size:14px}
+
+/* ---------- phone mockups ---------- */
+.phonestage{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;justify-content:center;padding:10px 0}
+.phone{width:390px;max-width:100%;height:800px;border-radius:44px;background:#1E2428;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.18);flex:none}
+.screen{height:100%;border-radius:34px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column}
+.ph-top{padding:18px 16px 12px;color:#fff;display:flex;flex-direction:column;gap:5px}
+.ph-top b{font-family:var(--display);font-weight:800;font-size:19px}
+.ph-top span{font-size:14px;opacity:.92}
+.ph-prog{height:10px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+.ph-prog div{height:10px;background:#fff}
+.tabs{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--line)}
+.tabs .chip{flex:none}
+.ph-body{flex:1;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:12px}
+.box{flex:none;width:44px;height:44px;border-radius:10px;border:2px solid #B8B0A0;background:#fff;font:800 20px var(--display);color:#fff;cursor:pointer}
+.task .tx{flex:1;font-size:15px;font-weight:700}
+.task .tx.done{font-weight:400;color:var(--muted);text-decoration:line-through}
+.cam{flex:none;font-size:12px;font-weight:800;padding:4px 8px;border-radius:999px}
+.rate{border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;border:2px solid var(--line);background:var(--card)}
+.rate .tx{font-weight:700;font-size:15px}
+.rbtns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.rb{min-height:44px;border-radius:10px;border:2px solid var(--line);background:#fff;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer}
+.ph-note{padding:10px 12px;border-radius:12px;background:#FFF3CC;color:#6E4D00;font-size:14px;font-weight:700}
+.ph-foot{padding:10px 12px 16px;background:var(--card);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.big{min-height:52px;border:0;border-radius:12px;background:var(--coral);color:#fff;font:800 17px var(--display);cursor:pointer}
+.ok{padding:10px 12px;border-radius:10px;background:#E3F1E7;color:#1F5C38;font-weight:700;font-size:14px}
+.side-note{flex:1 1 260px;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.side-note h3{margin:0;font-family:var(--display);font-size:17px}
+.side-note p{margin:0;font-size:15px;color:#3A4448}
+
+/* customer */
+.cust-h{padding:14px 16px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.cust-h .mono{color:#fff;width:40px;height:40px;font-size:13px}
+.cust-h b{font-family:var(--display);font-weight:800;font-size:17px;display:block}
+.cust-h small{font-size:13px;color:var(--muted)}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp>span{font-weight:700;font-size:14px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.opt{min-height:44px;padding:4px 10px;border-radius:10px;border:1.5px solid #D9D3C4;background:#fff;font-weight:700;font-size:14px;cursor:pointer;line-height:1.2}
+.cnt{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;font-size:14px}
+.cnt button{width:40px;height:40px;border-radius:8px;border:1.5px solid #D9D3C4;background:#fff;font:800 18px var(--display);cursor:pointer}
+.price{display:flex;justify-content:space-between;align-items:baseline}
+.price span{font-size:14px;color:var(--muted)}
+.price b{font-family:var(--display);font-weight:800;font-size:30px}
+.sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.sum div{padding:10px;border-radius:12px;display:flex;flex-direction:column;font-weight:700;font-size:13px}
+.sum b{font-family:var(--display);font-size:26px}
+.alert{border-radius:14px;overflow:hidden;border:2px solid}
+.alert .ah{padding:8px 12px;font-weight:800;font-family:var(--display);font-size:14px}
+.alert .ab{padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#fff;font-size:14px}
+.ph-photo{height:96px;border-radius:10px;background:#D7DEE2;display:grid;place-items:center;font-size:13px;color:#3A4448;font-weight:600}
+.lnk{min-height:40px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px;border-radius:9px;font-weight:700;font-size:14px;border:1.5px solid #D9D3C4;background:#fff;cursor:pointer}
+.lrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;border:1px solid #ECE6D9;background:#fff;font-size:14px}
+.lrow .bdg{min-width:74px;text-align:center}
+.line{display:flex;justify-content:space-between;gap:10px;font-size:15px;padding:6px 0;border-bottom:1px solid #EFEAE0;font-variant-numeric:tabular-nums}
+.sig{width:100%;min-height:44px;font:22px 'Source Sans 3',cursive;padding:0 12px;border-radius:10px;border:1.5px dashed #B8B0A0;background:#fff;font-style:italic}
+
+@media (max-width:640px){
+  .main{padding:20px 16px}
+  .item{grid-template-columns:52px minmax(0,1fr)}
+  .item>div:last-child{grid-column:1/-1}
+  .notes{position:static;max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="bar">
+    <a class="brand" href="#service" aria-label="Portals for Business demo">
+      <svg viewBox="0 6 128 128" width="40" height="40" aria-hidden="true"><path fill="#174C4F" d="M20 46 L108 26 L108 114 L122 120 L94 120 L94 42 L34 56 L34 120 L6 120 L20 114 Z"/><path fill="#E67562" d="M40 57.6 L88 46.4 L88 120 L81 120 L81 55 L47 63 L47 120 L40 120 Z"/><path fill="#A9432F" d="M47 63 L81 55 L81 120 L47 120 Z"/><path fill="#E67562" d="M48 69 L68 58 L68 120 L48 116.5 Z"/><circle cx="64.5" cy="90" r="1.9" fill="#F7F4ED"/></svg>
+      <span><b>Portals</b><small>for Business</small></span>
+    </a>
+    <span class="tag">CRM demo · sample data</span>
+    <span class="spacer"></span>
+    <button class="notesbtn" type="button" id="notesToggle" aria-expanded="true">Hide notes</button>
+  </div>
+  <div class="picker" role="group" aria-label="Pick a business" id="picker"></div>
+  <div class="views" role="group" aria-label="Pick a screen" id="views"></div>
+  <div class="stagewrap">
+    <div class="stage" id="stage"></div>
+    <aside class="notes" id="notes" aria-label="Notes">
+      <h2>What should change?</h2>
+      <p id="notesFor">Notes for this screen. They stay in this browser only.</p>
+      <label for="noteBox" style="position:absolute;left:-9999px">Notes for this screen</label>
+      <textarea id="noteBox" placeholder="Type anything you or Seth want changed on this screen…"></textarea>
+      <div class="saved" id="savedMsg" aria-live="polite"></div>
+      <div class="row">
+        <button class="btn" type="button" id="copyAll">Copy all notes</button>
+        <button class="btn ghost" type="button" id="showAll">Show all notes</button>
+      </div>
+      <div class="allnotes" id="allNotes" hidden></div>
+      <p>Paste your copied notes to Claude and the changes get made.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+const LV = { g:{bg:'#E3F1E7',fg:'#1F5C38',bd:'#2E7D4F',t:'● Good'}, y:{bg:'#FFF3CC',fg:'#6E4D00',bd:'#C99A1A',t:'▲ Watch'}, r:{bg:'#FCE4E1',fg:'#9A2118',bd:'#C9392D',t:'■ Fix now'} };
+const PAL = [['#E8EEF3','#24486B'],['#FBE7E2','#8E3324'],['#E7F0E3','#2F5A26'],['#F1E6F0','#5E2F56'],['#FFF1D6','#7A4F00']];
+const money = n => '$' + Math.round(n).toLocaleString();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const B = {
+service:{ name:'Ridgeline Home Repair', short:'RH', kind:'Handyman + repair', accent:'#174C4F', owner:'Dana', label:'Service',
+  nav:[['Today',''],['Client dashboard','3'],['Calendar',''],['Customers',''],['Invoices',''],['Texts','2'],['Checklists',''],['Settings','']],
+  tiles:[['3','New leads','1 from the website tonight',1],['4','Quotes waiting','2 on day 5: call today'],['2','Approved, needs a date','Deposit paid',1],['1','Invoice to send','Job finished yesterday']],
+  listTitle:"Today's jobs", teams:['Marco','Dee'],
+  items:[['8:30','Ana Ruiz','Ogden','Deck repair','Marco',100,'Done ✓ · invoice sent'],['9:00','Maria Lopez','Eden','Fence gate','Dee',60,'In progress'],['1:30','Ken Ward','Huntsville','Bath fan + trim','Marco',0,'Up next'],['6:00','Tara Kim','Liberty','Quote visit','Dee',0,'Reminder sent','Wants it before 6']],
+  you:[['Jobs finished','38'],['Quotes sent','22'],['Hours on jobs','141'],['Earned','$18,340']],
+  crm:[['Reminder texts','96'],['New reviews','6'],['Referral jobs','2 · $1,480'],['Auto-charged','$4,920'],['Missed calls texted back','11']], saved:19,
+  side:{title:'Permits + insurance',rows:[['Ana Ruiz deck permit','Inspection Thu','y'],['Bright Path Electric insurance','Runs out Nov 11','y'],['Top Coat Painting insurance','Expired','r']]},
+  side2:{title:'Texts',rows:[['Tara Kim','Can you come a little before 6?'],['Jon Baird','Approved! Paid the deposit.']]},
+  phoneLabel:'Crew phone',
+  phone:{title:'Ana Ruiz · Deck repair', sub:'Marco · Truck 1 · on site 8:31', mode:'check',
+    sections:{'Before':[['Walk the deck with the customer',0,1],['Before photos, all sides',1,1]],'Repair':[['Check joists for rot',1,1],['Replace bad boards',0,0],['Seal new boards',0,0]],'Wrap-up':[['Sweep and haul scrap',0,0],['After photos',1,0],['Customer signs off on phone',0,0]]},
+    note:'Dog in the backyard. Use the side gate.', finish:'Finish job + send invoice', sent:'Done! Ana got her invoice and a review request.'},
+  custLabel:'Customer portal',
+  customer:{mode:'portal', title:'Your quote · Deck repair', sub:'Ridgeline Home Repair for Ana Ruiz',
+    choices:[['Repair the damaged boards',1180],['Repair + seal the whole deck',1640]], extras:[['Add a stair handrail',380],['Haul away old boards',60]], deposit:.25,
+    cta:'Approve + sign', done:'Approved and signed! Your deposit is paid. We\'ll text you a start date.'},
+  why:'The full service CRM: leads, quotes, jobs, invoices and card payments, with crews on their phones.'},
+
+cleaning:{ name:'Sparrow & Sage Cleaning', short:'S&S', kind:'House cleaning', accent:'#3F5D3A', owner:'Mia', label:'Cleaning',
+  nav:[['Today',''],['Bookings','3'],['Recurring',''],['Schedule + routes',''],['Customers',''],['Checklists',''],['Invoices',''],['Supplies','2']],
+  tiles:[['7','Cleans today','2 teams, 1 move-out'],['42','Recurring customers','Weekly + every other week'],['3','Booking requests','From the website tonight',1],['2','Supplies low','Glass cleaner, cloths',1]],
+  listTitle:"Today's cleans", teams:['Team A','Team B'],
+  items:[['8:00','Amy Chen','Eden','Weekly','Team A',100,'Done ✓ · photos sent'],['8:30','412 Elm (rental)','Ogden','Move-out','Team B',60,'In progress · 60%','Landlord wants photos'],['10:30','The Parkers','Huntsville','Every other week','Team A',0,'Up next','Has a dog'],['12:00','Mountain Cabin #3','Liberty','Airbnb turnover','Team A',0,'Guest checks in 4 PM'],['1:30','Rachel Ames','North Ogden','Deep clean','Team B',0,'Scheduled']],
+  you:[['Cleans done','142'],['Move-outs','9'],['Earned','$21,480']],
+  crm:[['Reminder texts','288'],['Recurring visits booked','118'],['New reviews','11'],['Auto-charged','$16,900']], saved:24,
+  side:{title:'Supplies running low',rows:[['Glass cleaner · Team A van','1 left','r'],['Microfiber cloths · Team B van','8 left','y'],['Trash bags','Stocked','g']]},
+  side2:{title:'New booking requests',rows:[['Leah Gomez','Every other week · 3 bed, 2 bath · $165'],['Ben Wu','Move-out · Dec 1 · $340']]},
+  phoneLabel:"Cleaner's phone",
+  phone:{title:'412 Elm · Move-out clean', sub:'Team B · Jess + Tia · started 8:34', mode:'check',
+    sections:{'Kitchen':[['Inside oven, racks out',1,1],['Inside fridge and freezer',1,1],['Cabinets inside and out',0,1],['Counters and backsplash',0,0],['Sink and faucet shined',0,0]],'Bath':[['Tub and shower, top to bottom',1,0],['Toilet inside, outside, base',0,0],['Mirror and fixtures',0,0]],'Bedrooms':[['Closets and shelves',0,1],['Baseboards',0,1],['Window sills and tracks',0,0]],'Floors':[['Vacuum carpet, edges too',1,0],['Mop hard floors',0,0],['After photo of each room',1,0]]},
+    note:'Landlord wants before and after photos of the oven and carpet.', finish:'Finish + send photo report', sent:'Sent! The landlord got the photo report and the invoice.'},
+  custLabel:'Customer books',
+  customer:{mode:'book', title:'Book a cleaning', cta:'Pick a day', done:'Request sent! Pick your day from the text we just sent you.',
+    groups:[{kind:'one',label:'What kind of clean?',options:[['Standard',90],['Deep clean',160],['Move-out',220],['Airbnb turnover',85]]},
+      {kind:'count',items:[['bed',20,1,3],['bath',15,1,2]]},
+      {kind:'freq',label:'How often?',options:[['One time',0],['Weekly',.15],['Every other week',.10],['Monthly',.05]],def:2},
+      {kind:'multi',label:'Add extras',options:[['Oven',35],['Fridge',30],['Windows',40],['Laundry',20]]}]},
+  why:'Recurring cleans, room-by-room checklists with photos, supply tracking and online booking with live prices.'},
+
+homewatch:{ name:'Valley Home Watch', short:'VH', kind:'Home watch', accent:'#2E5A88', owner:'Karen', label:'Home watch',
+  nav:[['Today',''],['Homes','48'],['Visit reports',''],['Open items','4'],['Schedule + routes',''],['Owners',''],['Invoices',''],['Trusted pros','']],
+  tiles:[['6','Homes to check today','Eden + Huntsville route'],['1','Red item open','Jensen: laundry leak',1],['3','Yellow items to quote','Ask owners to approve'],['48','Homes on the watch list','12 owners back in April']],
+  listTitle:"Today's home checks", teams:['Dee','Sam'],
+  items:[['10:42','Jensen home','Eden','Weekly check','Dee',100,'Report sent · 1 red'],['12:00','Cole cabin','Huntsville','Weekly check','Dee',40,'In progress'],['1:30','Patel home','Liberty','Storm check','Sam',0,'Up next','After last night\'s wind'],['3:00','Morris home','Eden','Owner arrival prep','Sam',0,'Owners land Friday']],
+  you:[['Visits done','186'],['Repairs set up','14'],['Earned','$9,860']],
+  crm:[['Reports emailed','186'],['Red items texted','5'],['Repair approvals by email','9'],['Auto-billed','$7,440']], saved:22,
+  side:{title:'Open items',rows:[['Jensen · laundry hose','Fix now','r'],['Jensen · tub caulk','Watch','y'],['Cole cabin · gutter','Watch','y']]},
+  side2:{title:'Owner messages',rows:[['Ellen Jensen','Yes, please fix the hose. Thank you!'],['Raj Patel','Is the fence OK after the wind?']]},
+  phoneLabel:'Crew phone',
+  phone:{title:'Jensen home · Eden', sub:'Dee · checked in 10:42 · GPS confirmed', mode:'rate',
+    sections:{'Inside':[['Doors locked, no signs of entry',0,'g'],['Thermostat at 55°',1,'g'],['Under all sinks dry',1,'g'],['Laundry room floor',1,'r']],'Water':[['Water heater',1,''],['Run faucets, flush toilets',0,'']],'Outside':[['Roof and gutters from the ground',1,''],['Snow off steps and walk',0,'']]},
+    note:'Owners: Jim + Ellen Jensen, in St. George until April.', finish:'Finish + send report', sent:'Report sent. The red item also went out by text.'},
+  custLabel:'Owner\'s report',
+  customer:{mode:'report', title:'Jensen home · Eden', sub:'Valley Home Watch · Tue Nov 3 · 38 min · by Dee', gps:'GPS confirmed at the home',
+    red:['Water on the laundry room floor','Slow drip from the washer hose. Dee shut the valves and dried the floor.',['Approve repair · $85','Pick a plumber']],
+    yellow:['Caulk cracking around the tub','Not leaking yet. Recaulk before spring.',['Add to next visit · $45']],
+    list:[['r','Laundry room: water by washer',1],['y','Main bath: tub caulk',1],['g','Doors locked, no signs of entry',1],['g','Thermostat at 55°',1],['g','Under all sinks dry',1],['g','Water heater: no leaks',1],['g','Fridge and freezer cold',1],['g','Snow off steps',1],['g','Mail brought in',0]]},
+  why:'Weekly checks with GPS proof, green/yellow/red visit reports, and repairs owners approve from the email.'},
+
+inspector:{ name:'Summit Ridge Home Inspections', short:'SR', kind:'Home inspector', accent:'#3B4F7A', owner:'Cole', label:'Home inspector',
+  nav:[['Today',''],['Inspections',''],['Reports','2'],['Agents',''],['Agreements',''],['Invoices',''],['Trusted pros',''],['Settings','']],
+  tiles:[['3','Inspections today','Plus 1 radon pickup'],['2','Reports due tonight','Agents are waiting',1],['5','Agent referrals','This month'],['1','Re-inspection','Seller says repairs are done']],
+  listTitle:"Today's inspections", teams:['Cole','Brent'],
+  items:[['8:00','1820 Pine Ln','Ogden','Full inspection','Cole',100,'Report sent · 2 red'],['11:30','55 Canyon Rd','Eden','Full inspection','Cole',30,'In progress','Buyer walk-through 1:30'],['1:00','903 Oak St','North Ogden','Radon pickup','Brent',0,'Up next'],['3:30','214 Maple Dr','Ogden','Re-inspection','Brent',0,'Agent attending']],
+  you:[['Inspections','46'],['Reports written','46'],['Earned','$20,240']],
+  crm:[['Reports emailed to buyers + agents','92'],['Agreements signed online','46'],['Paid before the report','46'],['Agent thank-you notes','18']], saved:25,
+  side:{title:'Agents sending you work',rows:[['Weber Realty','9 this year','g'],['Mountain Home Group','6 this year','g'],['Peak Realty','First referral','y']]},
+  side2:{title:'Report questions',rows:[['Garcia family (buyer)','Is the panel a big deal?'],['Lisa, Weber Realty','Can I get the repair list today?']]},
+  phoneLabel:'Inspector tablet',
+  phone:{title:'55 Canyon Rd · Full inspection', sub:'Cole · started 11:32 · 2,140 sq ft · built 1998', mode:'rate',
+    sections:{'Roof':[['Shingles',1,'g'],['Flashing at chimney',1,'y'],['Gutters + downspouts',1,'g']],'Electrical':[['Main panel',1,'r'],['GFCI outlets, kitchen + baths',0,'']],'Plumbing':[['Water heater age + strap',1,''],['Supply lines under sinks',1,'']],'HVAC':[['Furnace age + filter',1,''],['AC condenser',1,'']]},
+    note:'Buyer and agent arrive 1:30 for the walk-through.', finish:'Finish + build report', sent:'Report sent to the buyer and both agents.'},
+  custLabel:'Buyer\'s report',
+  customer:{mode:'report', title:'55 Canyon Rd · Inspection', sub:'For the Garcia family · Summit Ridge · Nov 3 · 3 hrs', gps:'Agreement signed · paid · photos time-stamped',
+    red:['Main electrical panel: double-tapped breakers','Two breakers have two wires each. A licensed electrician should fix this before closing.',['Add to repair request','Get electrician quotes']],
+    yellow:['Chimney flashing pulling away','No leak seen today. Reseal within the year.',['Add to repair request']],
+    list:[['r','Main electrical panel',1],['y','Chimney flashing',1],['g','Shingles: about 8 years old',1],['g','Gutters + downspouts',1],['g','Furnace: 2016, filter changed',1],['g','Water heater: strapped',1],['g','Supply lines dry',1],['g','GFCI outlets working',0],['g','Smoke detectors present',0]]},
+  why:'Online agreements and payment before the report, green/yellow/red reports with photos, and a repair request list buyers and agents can use.'},
+
+landscaping:{ name:'Greenline Lawn & Landscape', short:'GL', kind:'Lawn + landscaping', accent:'#4C6B2F', owner:'Tyler', label:'Landscaping',
+  nav:[['Today',''],['Routes',''],['Recurring','212'],['Bids','4'],['Customers',''],['Invoices',''],['Equipment','2'],['Settings','']],
+  tiles:[['34','Yards today','2 crews'],['6','Sprinkler blowouts left','Before the freeze',1],['4','Bids waiting','Spring landscaping'],['2','Rain-day moves','Moved to Thursday']],
+  listTitle:"Today's route", teams:['Crew 1','Crew 2'],
+  items:[['7:30','Hill Rd route (9 yards)','Eden','Weekly mow','Crew 1',100,'Done ✓ · all charged'],['8:00','Rachel Ames','North Ogden','Fall cleanup','Crew 2',50,'In progress · 12 bags'],['11:00','Valley Church','Huntsville','Sprinkler blowout','Crew 1',0,'Up next'],['2:00','Tom Hale','Ogden','Bid visit','Crew 2',0,'Measure + photos','New sod + rock bed']],
+  you:[['Yards serviced','612'],['Bids sent','19'],['Earned','$38,400']],
+  crm:[['Visit reminders','604'],['Charged after each visit','$29,800'],['Rain-day texts','140'],['New reviews','14']], saved:31,
+  side:{title:'Equipment',rows:[['Mower 2','Blade sharpen due','y'],['Trailer tire','Low pressure','r'],['Blower 1','Good','g']]},
+  side2:{title:'Texts',rows:[['Rachel Ames','Can you haul the branches too?'],['Tom Hale','Tuesday works for the bid.']]},
+  phoneLabel:'Crew phone',
+  phone:{title:'Rachel Ames · Fall cleanup', sub:'Crew 2 · on site 8:04', mode:'check',
+    sections:{'Yard':[['Before photo, front + back',1,1],['Rake + bag leaves',0,1],['Cut back perennials',0,0]],'Beds':[['Edge beds',0,0],['Weed beds',0,0]],'Wrap-up':[['Blow walks + driveway',0,0],['After photo',1,0],['Count bags hauled',0,0]]},
+    note:'Gate code is in the customer card. Dog stays inside.', finish:'Finish + charge card', sent:'Charged $185. Rachel got before and after photos.'},
+  custLabel:'Customer books',
+  customer:{mode:'book', title:'Get a lawn care price', cta:'Pick a start day', done:'Got it! We texted you the open start days.',
+    groups:[{kind:'one',label:'What do you need?',options:[['Weekly mowing',45],['Fall cleanup',160],['Sprinkler blowout',65],['Aeration',85]]},
+      {kind:'count',items:[['quarter acre',20,1,1]]},
+      {kind:'freq',label:'How often?',options:[['One time',0],['Weekly all season',.10],['Every other week',.05]],def:0},
+      {kind:'multi',label:'Add extras',options:[['Edge beds',15],['Fertilizer',40],['Haul clippings',10]]}]},
+  why:'Recurring routes, rain-day texts, charge after each visit, before/after photos and equipment upkeep.'},
+
+grooming:{ name:'Wag & Wash Grooming', short:'WW', kind:'Pet grooming', accent:'#6B4A8A', owner:'Alyssa', label:'Pet grooming',
+  nav:[['Today',''],['Appointments',''],['Pets','310'],['Vaccines','2'],['Rebook list','6'],['Invoices',''],['Texts',''],['Settings','']],
+  tiles:[['11','Pets today','2 groomers'],['2','Vaccines expiring','Rabies due this month',1],['6','Due to rebook','Last groom 6+ weeks ago'],['1','New puppy','First groom: go slow']],
+  listTitle:"Today's pets", teams:['Alyssa','Nora'],
+  items:[['8:00','Biscuit · Goldendoodle','owner Kim Lowe','Full groom','Alyssa',100,'Ready · photo sent'],['9:30','Pepper · Schnauzer','owner Ben Wu','Full groom','Nora',60,'In the tub'],['10:30','Max · Lab','owner Sam Reyes','Bath + nails','Alyssa',0,'Checked in','Nervous with dryers'],['1:00','Luna · puppy','owner Lena Park','First groom','Nora',0,'Up next','Go slow']],
+  you:[['Pets groomed','248'],['Add-ons sold','96'],['Earned','$17,860']],
+  crm:[['Reminder texts','240'],['Rebooked before leaving','71%'],['Vaccine reminders','18'],['Pickup texts with photo','248']], saved:16,
+  side:{title:'Vaccines',rows:[['Max · rabies','Expires Nov 20','y'],['Pepper · bordetella','Expired','r'],['Biscuit','Up to date','g']]},
+  side2:{title:'Pet notes',rows:[['Max','Nervous with dryers. Towel dry first.'],['Luna','First groom. Treats OK.']]},
+  phoneLabel:"Groomer's tablet",
+  phone:{title:'Pepper · Schnauzer', sub:'Nora · owner Ben Wu · checked in 9:28', mode:'check',
+    sections:{'Check-in':[['Check skin, ears, paws',0,1],['Before photo',1,1]],'Groom':[['Bath + conditioner',0,1],['Nails trimmed',0,0],['Ears cleaned',0,0],['Schnauzer cut, #7 body',0,0]],'Pickup':[['After photo for owner',1,0],['Bandana',0,0],['Rebook in 6 weeks',0,0]]},
+    note:'Owner note: leave the beard long.', finish:'Done + text owner', sent:'Ben got a photo of Pepper and a pickup text.'},
+  custLabel:'Owner books',
+  customer:{mode:'book', title:'Book a groom', cta:'Pick a time', done:'Booked! We\'ll text a reminder the day before.',
+    groups:[{kind:'one',label:"Your dog's size",options:[['Small',55],['Medium',70],['Large',85],['Extra large',105]],def:1},
+      {kind:'one',label:'Service',options:[['Full groom',0],['Bath + nails',-15],['Nails only',-40],['Puppy first groom',-20]]},
+      {kind:'freq',label:'How often?',options:[['Just once',0],['Every 4 weeks',.10],['Every 6 weeks',.05],['Every 8 weeks',.05]],def:2},
+      {kind:'multi',label:'Add extras',options:[['Teeth brushing',12],['De-shed',20],['Blueberry facial',10]]}]},
+  why:'Pet profiles with notes, vaccine reminders, pickup texts with a photo and rebooking before they leave.'},
+
+salon:{ name:'Willow Hair Studio', short:'WH', kind:'Hair salon', accent:'#8C3F55', owner:'Brooke', label:'Salon',
+  nav:[['Today',''],['Book',''],['Clients',''],['Formulas',''],['Waitlist','5'],['Products','2'],['Invoices',''],['Settings','']],
+  tiles:[['14','Appointments today','3 chairs'],['78%','Rebooked','Goal is 80%'],['$420','Products this week','Bond repair sold out'],['1','Open spot today','Waitlist texted',1]],
+  listTitle:"Today's chairs", teams:['Brooke','Kayla','Jo'],
+  items:[['9:00','Emma Hart','chair 1','Color + cut','Brooke',100,'Paid · rebooked'],['10:00','Nina Lopez','chair 2','Highlights','Kayla',50,'Processing'],['11:30','Open spot','chair 3','Waitlist','Jo',0,'2 people texted'],['1:00','Ava Brooks','chair 1','Cut','Brooke',0,'Confirmed by text']],
+  you:[['Clients served','236'],['Rebooked','184'],['Earned','$24,300']],
+  crm:[['Reminder texts','470'],['Waitlist spots filled','9'],['No-show fees collected','$150'],['New reviews','12']], saved:18,
+  side:{title:'Product stock',rows:[['Purple shampoo','Low','y'],['Bond repair','Sold out','r'],['Texture spray','Good','g']]},
+  side2:{title:'Waitlist',rows:[['Grace Kim','Any time today'],['Holly Ward','After 11']]},
+  phoneLabel:"Stylist's phone",
+  phone:{title:'Nina Lopez · Highlights', sub:'Kayla · chair 2 · 10:00', mode:'check',
+    sections:{'Consult':[['Before photo',1,1],['Last formula: 7N + 20 vol',0,1]],'Service':[['Foils placed',0,1],['Process 35 min',0,0],['Tone with 9V',0,0],['Blowout + style',0,0]],'Checkout':[['After photo',1,0],["Save today's formula",0,0],['Rebook in 8 weeks',0,0]]},
+    note:'Client likes it cool. No warm tones.', finish:'Check out + rebook', sent:'Paid, rebooked for Dec 29, and her formula is saved.'},
+  custLabel:'Client books',
+  customer:{mode:'book', title:'Book with Willow', cta:'Pick a time', done:'Booked! Your reminder comes by text the day before.',
+    groups:[{kind:'one',label:'Service',options:[['Cut',55],['Color + cut',140],['Highlights',165],['Blowout',40]],def:1},
+      {kind:'one',label:'Stylist',options:[['Brooke (owner) +$20',20],['Kayla',0],['Jo',0],['First open',0]],def:1},
+      {kind:'one',label:'Hair length',options:[['Short',0],['Medium +$15',15],['Long +$30',30]],def:1},
+      {kind:'multi',label:'Add extras',options:[['Deep conditioning',25],['Gloss',35],['Bang trim',0]]}]},
+  why:'Booking by stylist, saved color formulas, waitlist texts for open spots, rebooking and product stock.'},
+
+maker:{ name:'Juniper & Stone Jewelry', short:'J&S', kind:'Jewelry studio', accent:'#6B3E5E', owner:'June', label:'Artist / maker',
+  nav:[['Today',''],['Commissions','5'],['Orders',''],['Inventory',''],['Materials','2'],['Markets',''],['Customers',''],['Settings','']],
+  tiles:[['5','Commissions in progress','2 waiting on approval'],['2','Ship this week','Ring for Ellie, Fri'],['3','New inquiries','Instagram + website',1],['1','Market Saturday','Ogden Farmers Market']],
+  listTitle:"Today's bench", teams:['Studio','Shipping'],
+  items:[['9:00','Ellie Fox','Custom ring','Design approval','Studio',100,'Approved ✓'],['10:30','Sam Reyes','Pendant','Casting','Studio',50,'Casting today'],['1:00','Order #2291','Earrings','Ship','Shipping',0,'Label ready'],['3:00','Lena Park','Engagement ring','Consult','Studio',0,'Video call']],
+  you:[['Pieces finished','21'],['Commissions','6'],['Earned','$7,940']],
+  crm:[['Approval reminders','14'],['Deposits collected','$2,600'],['Review requests','18'],['New reviews','5']], saved:11,
+  side:{title:'Materials',rows:[['Sterling silver sheet','Low','y'],['14k gold wire','Order now','r'],['Ring boxes','Stocked','g']]},
+  side2:{title:'Inquiries',rows:[['@ellie.fox','Can you add a second stone?'],['Website form','Custom name necklace?']]},
+  phoneLabel:'Bench card',
+  phone:{title:'Ring for Ellie · bench card', sub:'June · due Friday · size 6.5', mode:'check',
+    sections:{'Design':[['Sketch approved by customer',0,1],['Stones picked',1,1]],'Making':[['Cast band',1,1],['Set stones',1,0],['Polish',0,0]],'Finish':[['Photo for customer',1,0],['Gift box + card',0,0],['Shipping label',0,0]]},
+    note:'Engraving inside: "Always".', finish:'Mark done + email photos', sent:'Sent! Ellie got her photos and the shipping notice.'},
+  custLabel:'Customer portal',
+  customer:{mode:'portal', title:'Your design · Custom ring', sub:'Juniper & Stone for Ellie Fox',
+    choices:[['Sterling silver',420],['14k gold',1180]], extras:[['Engraving',45],['Gift wrap',10]], deposit:.5,
+    cta:'Approve design + pay deposit', done:'Approved! Your deposit is paid and June starts on your ring.'},
+  why:'Commissions with design approvals and deposits, materials cost, inventory and market days.'}
+};
+const ORDER = ['service','cleaning','homewatch','inspector','landscaping','grooming','salon','maker'];
+const VIEWS = [['desk',"Owner's desk"],['phone','phone'],['cust','cust']];
+
+const S = {};
+function initState(b){
+  const s = { team:'all', sec:Object.keys(b.phone.sections)[0], phone:{}, sent:false, filter:'all', cust:{}, done:false, sig:'' };
+  for (const [k, xs] of Object.entries(b.phone.sections)) s.phone[k] = xs.map(x => x[2]);
+  const c = b.customer;
+  if (c.mode === 'book') c.groups.forEach((g, i) => {
+    if (g.kind === 'one' || g.kind === 'freq') s.cust[i] = g.def || 0;
+    if (g.kind === 'count') s.cust[i] = g.items.map(x => x[3]);
+    if (g.kind === 'multi') s.cust[i] = g.options.map(() => false);
+  });
+  if (c.mode === 'portal') { s.cust.choice = 0; s.cust.extras = c.extras.map(() => false); }
+  return s;
+}
+const st = id => (S[id] ||= initState(B[id]));
+const LOCK = 'grooming';
+let cur = LOCK || 'service', view = 'desk';
+
+function badgeFor(b, type){
+  const types = [...new Set(b.items.map(i => i[3]))];
+  const p = PAL[types.indexOf(type) % PAL.length];
+  return `<span class="bdg" style="background:${p[0]};color:${p[1]}">${esc(type)}</span>`;
+}
+function lvlBadge(l, text){ const v = LV[l]; return `<span class="bdg" style="background:${v.bg};color:${v.fg}">${esc(text || v.t)}</span>`; }
+
+function renderDesk(b, s){
+  const items = b.items.filter(i => s.team === 'all' || i[4] === s.team);
+  const chip = (id, label) => `<button type="button" class="chip" data-act="team" data-v="${esc(id)}" aria-pressed="${s.team===id}" style="${s.team===id?`background:${b.accent};border-color:${b.accent};color:#fff`:''}">${esc(label)}</button>`;
+  return `<div class="desk">
+    <nav class="side" aria-label="${esc(b.name)} menu" style="background:${b.accent}">
+      <div class="who"><span class="mono" style="color:${b.accent}">${esc(b.short)}</span><span><span class="nm">${esc(b.name)}</span><br><span class="kd">${esc(b.kind)}</span></span></div>
+      ${b.nav.map((n,i)=>`<span class="navi${i===0?' on':''}">${esc(n[0])}<span>${esc(n[1])}</span></span>`).join('')}
+    </nav>
+    <div class="main">
+      <div class="hd"><div><p>Tuesday, November 3</p><h1>Good morning, ${esc(b.owner)}</h1></div>
+        <div class="chips"><button type="button" class="btn ghost">+ New customer</button><button type="button" class="btn">+ New ${b.customer.mode==='book'?'booking':'job'}</button></div></div>
+      <section class="tiles" aria-label="At a glance">${b.tiles.map(t=>`<div class="tile"><b style="color:${t[3]?'#C2533F':b.accent}">${esc(t[0])}</b><strong>${esc(t[1])}</strong><span>${esc(t[2])}</span></div>`).join('')}</section>
+      <div class="cols">
+        <section class="panel left" aria-label="${esc(b.listTitle)}">
+          <div class="rowx" style="flex-wrap:wrap"><h2>${esc(b.listTitle)}</h2><div class="chips" role="group" aria-label="Filter">${chip('all','All')}${b.teams.map(t=>chip(t,t)).join('')}</div></div>
+          ${items.map(i=>`<div class="item"><span class="t">${esc(i[0])}</span><div style="min-width:0"><div class="w">${esc(i[1])} <small>· ${esc(i[2])}</small></div><div class="badges">${badgeFor(b,i[3])}<span class="bdg" style="background:#E8EDF0;color:#2C3A43">${esc(i[4])}</span>${i[7]?`<span class="bdg" style="background:#FFF3CC;color:#6E4D00">${esc(i[7])}</span>`:''}</div></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><span class="stat" style="color:${i[5]===100?'#1F5C38':i[5]>0?'#24486B':'#55605F'}">${esc(i[6])}</span><div class="prog"><div style="width:${i[5]}%;background:${i[5]===100?'#2E7D4F':b.accent}"></div></div></div></div>`).join('')}
+        </section>
+        <div class="right">
+          <section class="panel vs" aria-label="October: you vs your CRM"><h2>October: you vs. your CRM</h2>
+            <div class="vsg"><div style="background:var(--soft)"><span class="lab" style="color:var(--muted)">What you did</span>${b.you.map(k=>`<div class="kv"><span>${esc(k[0])}</span><strong>${esc(k[1])}</strong></div>`).join('')}</div>
+            <div style="background:${b.accent};color:#F7F4ED"><span class="lab">What your CRM did</span>${b.crm.map(k=>`<div class="kv"><span>${esc(k[0])}</span><strong>${esc(k[1])}</strong></div>`).join('')}<div class="saved-h">About ${b.saved} hours of office work saved</div></div></div></section>
+          <section class="panel" aria-label="${esc(b.side.title)}"><h2>${esc(b.side.title)}</h2>${b.side.rows.map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}</section>
+          <section class="panel" aria-label="${esc(b.side2.title)}"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Open</button></div>`).join('')}</section>
+        </div>
+      </div>
+    </div></div>`;
+}
+
+function renderPhone(b, s){
+  const p = b.phone, secs = Object.keys(p.sections);
+  const all = secs.flatMap(k => p.sections[k].map((x, i) => ({ photo:x[1], v:s.phone[k][i] })));
+  const done = all.filter(x => p.mode === 'rate' ? x.v : x.v).length;
+  const photosLeft = all.filter(x => x.photo && !x.v).length;
+  const counts = { g:0, y:0, r:0 }; if (p.mode === 'rate') all.forEach(x => { if (x.v) counts[x.v]++; });
+  const tabs = secs.map(k => { const d = s.phone[k].filter(Boolean).length; const on = s.sec === k;
+    return `<button type="button" class="chip" data-act="sec" data-v="${esc(k)}" aria-pressed="${on}" style="${on?`background:${b.accent};border-color:${b.accent};color:#fff`:''}">${esc(k)} ${d}/${p.sections[k].length}</button>`; }).join('');
+  const rows = p.sections[s.sec].map((x, i) => {
+    const v = s.phone[s.sec][i];
+    if (p.mode === 'rate') {
+      const btn = l => `<button type="button" class="rb" data-act="rate" data-i="${i}" data-v="${l}" aria-pressed="${v===l}" style="${v===l?`background:${LV[l].bg};border-color:${LV[l].bd};color:${LV[l].fg}`:''}">${LV[l].t}</button>`;
+      return `<div class="rate" style="${v?`background:${LV[v].bg};border-color:${LV[v].bd}`:''}"><span class="tx">${esc(x[0])}</span><div class="rbtns" role="group" aria-label="${esc(x[0])}">${btn('g')}${btn('y')}${btn('r')}</div>${(v==='y'||v==='r')?'<span style="font-size:13px;font-weight:700;color:#6E4D00">Add a photo and a short note</span>':''}</div>`;
+    }
+    return `<div class="task"><button type="button" class="box" data-act="check" data-i="${i}" aria-pressed="${!!v}" aria-label="${esc(x[0])}" style="${v?`background:${b.accent};border-color:${b.accent}`:''}">${v?'✓':''}</button><span class="tx${v?' done':''}">${esc(x[0])}</span>${x[1]?`<span class="cam" style="${v?'background:#E3F1E7;color:#1F5C38':'background:#FFF3CC;color:#6E4D00'}">${v?'Photo added':'Photo needed'}</span>`:''}</div>`;
+  }).join('');
+  const head = p.mode === 'rate'
+    ? `<div style="display:flex;gap:6px;flex-wrap:wrap;font-size:13px;font-weight:800">${['g','y','r'].map(l=>`<span style="padding:4px 10px;border-radius:999px;background:${LV[l].bg};color:${LV[l].fg}">${LV[l].t.split(' ')[0]} ${counts[l]} ${l==='g'?'good':l==='y'?'watch':'fix now'}</span>`).join('')}</div>`
+    : `<div class="ph-prog"><div style="width:${Math.round(done/all.length*100)}%"></div></div><span style="font-weight:700;font-size:13px">${done} of ${all.length} done · ${photosLeft} photos still needed</span>`;
+  return `<div class="phonestage"><div class="phone"><div class="screen">
+      <div class="ph-top" style="background:${b.accent}"><b>${esc(p.title)}</b><span>${esc(p.sub)}</span>${head}</div>
+      <div class="tabs" role="group" aria-label="Sections">${tabs}</div>
+      <div class="ph-body">${rows}<div class="ph-note">${esc(p.note)}</div></div>
+      <div class="ph-foot">${s.sent?`<span class="ok">${esc(p.sent)}</span>`:''}<button type="button" class="big" data-act="finish">${esc(p.finish)}</button></div>
+    </div></div>
+    <div class="side-note"><h3>${esc(b.phoneLabel)}</h3><p>${p.mode==='rate'?'Mark every item Good, Watch or Fix now. Yellow and red ask for a photo. Red items text the owner right away when the report goes out.':'Tap the boxes to check items off. Items marked "Photo needed" go into the customer\'s photo report.'}</p><p>Switch sections with the buttons at the top of the phone.</p><button type="button" class="btn ghost" data-act="reset">Start over</button></div></div>`;
+}
+
+function bookPrice(c, s){
+  let price = 0, off = 0;
+  c.groups.forEach((g, i) => {
+    if (g.kind === 'one') price += g.options[s.cust[i]][1];
+    if (g.kind === 'count') g.items.forEach((x, j) => price += (s.cust[i][j] - x[2]) * x[1]);
+    if (g.kind === 'multi') g.options.forEach((o, j) => { if (s.cust[i][j]) price += o[1]; });
+    if (g.kind === 'freq') off = g.options[s.cust[i]][1];
+  });
+  return { price:Math.max(0, Math.round(price * (1 - off))), freq:c.groups.find(g=>g.kind==='freq') };
+}
+function renderCust(b, s){
+  const c = b.customer, a = b.accent;
+  const on = x => x ? `background:${a};border-color:${a};color:#fff` : '';
+  let body = '', foot = '';
+  if (c.mode === 'book') {
+    body = c.groups.map((g, i) => {
+      if (g.kind === 'one' || g.kind === 'freq') return `<div class="grp"><span>${esc(g.label)}</span><div class="opts">${g.options.map((o,j)=>`<button type="button" class="opt" data-act="one" data-g="${i}" data-i="${j}" aria-pressed="${s.cust[i]===j}" style="${on(s.cust[i]===j)}">${esc(o[0])}${g.kind==='freq'&&o[1]?` · ${Math.round(o[1]*100)}% off`:''}</button>`).join('')}</div></div>`;
+      if (g.kind === 'count') return `<div class="opts">${g.items.map((x,j)=>{const n=s.cust[i][j];return `<div class="cnt"><span>${n} ${esc(x[0])}${n===1?'':'s'}</span><span style="display:flex;gap:4px"><button type="button" data-act="cnt" data-g="${i}" data-i="${j}" data-v="-1" aria-label="Fewer">−</button><button type="button" data-act="cnt" data-g="${i}" data-i="${j}" data-v="1" aria-label="More">+</button></span></div>`;}).join('')}</div>`;
+      if (g.kind === 'multi') return `<div class="grp"><span>${esc(g.label)}</span><div class="chips">${g.options.map((o,j)=>`<button type="button" class="opt" data-act="multi" data-g="${i}" data-i="${j}" aria-pressed="${s.cust[i][j]}" style="${on(s.cust[i][j])}">${esc(o[0])}${o[1]?` +$${o[1]}`:''}</button>`).join('')}</div></div>`;
+      return '';
+    }).join('');
+    const r = bookPrice(c, s); const fi = c.groups.indexOf(r.freq);
+    const note = !r.freq || r.freq.options[s.cust[fi]][1] === 0 ? 'Your price' : 'Each visit · ' + r.freq.options[s.cust[fi]][0].toLowerCase();
+    foot = `<div class="price"><span>${esc(note)}</span><b style="color:${a}">${money(r.price)}</b></div>${s.done?`<span class="ok">${esc(c.done)}</span>`:''}<button type="button" class="big" data-act="book">${esc(c.cta)}</button>`;
+  }
+  if (c.mode === 'portal') {
+    const total = c.choices[s.cust.choice][1] + c.extras.reduce((t,x,i)=>t+(s.cust.extras[i]?x[1]:0),0);
+    body = `<div class="grp"><span>Pick an option</span>${c.choices.map((o,j)=>`<button type="button" class="opt" style="text-align:left;display:flex;justify-content:space-between;${on(s.cust.choice===j)}" data-act="choice" data-i="${j}" aria-pressed="${s.cust.choice===j}"><span>${esc(o[0])}</span><span>${money(o[1])}</span></button>`).join('')}</div>
+      <div class="grp"><span>Add on</span><div class="chips">${c.extras.map((x,j)=>`<button type="button" class="opt" data-act="extra" data-i="${j}" aria-pressed="${s.cust.extras[j]}" style="${on(s.cust.extras[j])}">${esc(x[0])} +${money(x[1])}</button>`).join('')}</div></div>
+      <div><div class="line"><span>Total</span><strong>${money(total)}</strong></div><div class="line"><span>Deposit today (${Math.round(c.deposit*100)}%)</span><strong>${money(total*c.deposit)}</strong></div></div>
+      <label class="grp" for="sig"><span>Type your name to sign</span><input id="sig" class="sig" data-act="sig" value="${esc(s.sig)}" placeholder="Your name" autocomplete="name"></label>`;
+    foot = `${s.done?`<span class="ok">${esc(c.done)}</span>`:''}<button type="button" class="big" data-act="book">${esc(c.cta)}</button>`;
+  }
+  if (c.mode === 'report') {
+    const n = l => c.list.filter(x => x[0]===l).length;
+    const alertBox = (l, x) => `<div class="alert" style="border-color:${LV[l].bd}"><div class="ah" style="background:${LV[l].bg};color:${LV[l].fg}">${LV[l].t}</div><div class="ab"><div class="ph-photo">[photo]</div><strong>${esc(x[0])}</strong><span>${esc(x[1])}</span><div class="chips">${x[2].map((t,k)=>`<button type="button" class="lnk" style="${k===0?'background:#C2533F;border-color:#C2533F;color:#fff':''}">${esc(t)}</button>`).join('')}</div></div></div>`;
+    const list = c.list.filter(x => s.filter==='all' || x[0]===s.filter);
+    const fchip = (id, label) => `<button type="button" class="chip" data-act="filter" data-v="${id}" aria-pressed="${s.filter===id}" style="${on(s.filter===id)}">${label}</button>`;
+    body = `<div style="font-size:13px;font-weight:700;color:${a}">${esc(c.gps)}</div>
+      <div class="sum">${['g','y','r'].map(l=>`<div style="background:${LV[l].bg};color:${LV[l].fg}"><b>${n(l)}</b>${LV[l].t}</div>`).join('')}</div>
+      ${alertBox('r', c.red)}${alertBox('y', c.yellow)}
+      <div class="rowx" style="flex-wrap:wrap"><strong>Everything checked</strong><div class="chips">${fchip('all','All')}${fchip('r','Fix')}${fchip('y','Watch')}${fchip('g','Good')}</div></div>
+      ${list.map(x=>`<div class="lrow">${lvlBadge(x[0])}<span style="flex:1">${esc(x[1])}</span>${x[2]?'<span style="width:40px;height:30px;border-radius:6px;background:#E4DED0" role="img" aria-label="Photo"></span>':''}</div>`).join('')}`;
+    foot = `<button type="button" class="big" style="background:${a}">See all photos in my portal</button>`;
+  }
+  return `<div class="phonestage"><div class="phone"><div class="screen">
+      <div class="cust-h"><span class="mono" style="background:${a}">${esc(b.short)}</span><span><b>${esc(c.title)}</b><small>${esc(c.sub || b.name)}</small></span></div>
+      <div class="ph-body" style="gap:12px;padding:12px 14px">${body}</div>
+      <div class="ph-foot">${foot}</div>
+    </div></div>
+    <div class="side-note"><h3>${esc(b.custLabel)}</h3><p>${c.mode==='book'?'The page their customer opens from the website or a text. Tap the choices and watch the price change.':c.mode==='portal'?'The customer picks an option, signs with their name and pays the deposit, all from one link.':'The report goes out by email and in the portal the moment the visit is finished. Use the buttons to show only red, yellow or green items.'}</p><p>${esc(b.why)}</p><button type="button" class="btn ghost" data-act="reset">Start over</button></div></div>`;
+}
+
+const $ = id => document.getElementById(id);
+function render(){
+  const b = B[cur], s = st(cur);
+  if (LOCK) { $('picker').innerHTML = `<a class="pick" href="index.html" style="text-decoration:none">← All businesses</a><span class="pick" aria-current="page" style="border-color:var(--ink)"><i style="background:${B[cur].accent}"></i>${esc(B[cur].label)}: ${esc(B[cur].name)}</span>`; } else
+  $('picker').innerHTML = ORDER.map(id => `<button type="button" class="pick" data-act="biz" data-v="${id}" aria-pressed="${id===cur}"><i style="background:${B[id].accent}"></i>${esc(B[id].label)}</button>`).join('');
+  const vl = { desk:"Owner's desk", phone:b.phoneLabel, cust:b.custLabel };
+  $('views').innerHTML = Object.entries(vl).map(([k,l]) => `<button type="button" class="view" data-act="view" data-v="${k}" aria-pressed="${view===k}">${esc(l)}</button>`).join('');
+  $('stage').innerHTML = view === 'desk' ? renderDesk(b, s) : view === 'phone' ? renderPhone(b, s) : renderCust(b, s);
+  $('notesFor').textContent = `Notes for ${b.label} · ${vl[view]}. They stay in this browser only.`;
+  $('noteBox').value = notes[cur + ':' + view] || '';
+}
+
+let notes = {};
+try { notes = JSON.parse(localStorage.getItem('portals-demo-notes') || '{}') || {}; } catch (e) { notes = {}; }
+function saveNotes(){ try { localStorage.setItem('portals-demo-notes', JSON.stringify(notes)); $('savedMsg').textContent = 'Saved'; } catch (e) { $('savedMsg').textContent = 'Could not save in this browser. Copy your notes before closing.'; } }
+function allNotesText(){
+  const vl = (id, v) => v === 'desk' ? "Owner's desk" : v === 'phone' ? B[id].phoneLabel : B[id].custLabel;
+  return ORDER.flatMap(id => ['desk','phone','cust'].map(v => { const t = (notes[id+':'+v]||'').trim(); return t ? `${B[id].label} · ${vl(id,v)}:\n${t}` : ''; })).filter(Boolean).join('\n\n') || 'No notes yet.';
+}
+
+$('noteBox').addEventListener('input', e => { notes[cur + ':' + view] = e.target.value; saveNotes(); if (!$('allNotes').hidden) $('allNotes').textContent = allNotesText(); });
+$('showAll').addEventListener('click', () => { const el = $('allNotes'); el.hidden = !el.hidden; el.textContent = allNotesText(); $('showAll').textContent = el.hidden ? 'Show all notes' : 'Hide all notes'; });
+$('copyAll').addEventListener('click', () => {
+  const t = allNotesText();
+  const fallback = () => { const el = $('allNotes'); el.hidden = false; el.textContent = t; const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); $('savedMsg').textContent = 'Selected. Press copy on your keyboard.'; };
+  try { navigator.clipboard.writeText(t).then(() => { $('savedMsg').textContent = 'Copied! Paste it to Claude.'; }, fallback); } catch (e) { fallback(); }
+});
+$('notesToggle').addEventListener('click', () => { const n = $('notes'); n.hidden = !n.hidden; $('notesToggle').textContent = n.hidden ? 'Show notes' : 'Hide notes'; $('notesToggle').setAttribute('aria-expanded', String(!n.hidden)); });
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act, v = el.dataset.v, b = B[cur], s = st(cur);
+  const g = +el.dataset.g, i = +el.dataset.i;
+  if (a === 'biz') { cur = v; try { history.replaceState(null, '', '#' + v); } catch (x) {} }
+  else if (a === 'view') view = v;
+  else if (a === 'team') s.team = v;
+  else if (a === 'sec') s.sec = v;
+  else if (a === 'check') { s.phone[s.sec][i] = !s.phone[s.sec][i]; s.sent = false; }
+  else if (a === 'rate') { s.phone[s.sec][i] = s.phone[s.sec][i] === v ? '' : v; s.sent = false; }
+  else if (a === 'finish') s.sent = true;
+  else if (a === 'one') { s.cust[g] = i; s.done = false; }
+  else if (a === 'cnt') { const x = b.customer.groups[g].items[i]; s.cust[g][i] = Math.min(8, Math.max(x[2], s.cust[g][i] + (+v))); s.done = false; }
+  else if (a === 'multi') { s.cust[g][i] = !s.cust[g][i]; s.done = false; }
+  else if (a === 'choice') { s.cust.choice = i; s.done = false; }
+  else if (a === 'extra') { s.cust.extras[i] = !s.cust.extras[i]; s.done = false; }
+  else if (a === 'book') s.done = true;
+  else if (a === 'filter') s.filter = v;
+  else if (a === 'reset') S[cur] = initState(b);
+  else return;
+  render();
+});
+document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.act === 'sig') st(cur).sig = e.target.value; });
+
+function fromHash(){ if (LOCK) return; const h = (location.hash || '').slice(1); if (B[h]) cur = h; }
+window.addEventListener('hashchange', () => { fromHash(); render(); });
+fromHash(); render();
+</script>
+</body>
+</html>
