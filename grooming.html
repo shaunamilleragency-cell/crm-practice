@@ -473,6 +473,17 @@ function addForm(b){
 function stockForm(){
   return `<div class="addf" role="group" aria-label="Add item"><label>Item<input id="sName" placeholder="Item name"></label><label>How much is left<select id="sLvl"><option value="g">Plenty</option><option value="y">Getting low</option><option value="r">Out / order now</option></select></label><div style="display:flex;gap:8px;align-items:flex-end"><button type="button" class="btn" data-act="saveStock">Save</button><button type="button" class="btn ghost" data-act="openAdd" data-v="">Cancel</button></div></div>`;
 }
+function setupPanel(b, s){
+  const onF = FEATS.filter(f=>has(s,f[0])).map(f=>f[1]), offF = FEATS.filter(f=>!has(s,f[0])).map(f=>f[1]);
+  return `<div class="addf" style="grid-template-columns:1fr;background:#EEF4F2;border-color:#174C4F" role="group" aria-label="Send me my setup">
+    <strong style="font-family:var(--display);font-size:18px">Send me my setup</strong>
+    <span style="font-size:14px;color:var(--muted)">Practice preview: nothing is sent yet. When this goes live, this form goes to us and then they pick a time for a free walkthrough.</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"><label>Your name<input placeholder="Name"></label><label>Business name<input placeholder="Business"></label><label>Email<input type="email" placeholder="you@email.com"></label><label>Best way to reach you<select><option>Email</option><option>Text</option><option>Phone call</option></select></label></div>
+    <div><strong>What we'd receive:</strong><br>Business type: ${esc(b.label)}<br>Basics: ${esc(CORE.join(', '))}<br>Extras they want: ${esc(onF.join(', ')||'none')}<br>Extras they turned off: ${esc(offF.join(', ')||'none')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-act="setupSent">Send (practice)</button><button type="button" class="btn ghost" data-act="setup">Close</button></div>
+    ${s.setupSent?'<span class="ok">Practice only: in the real one, this is where they would see "Thanks! Pick a time for your free walkthrough" with a booking button.</span>':''}
+  </div>`;
+}
 function renderSection(b, s){
   const label = b.nav[s.nav][0], L = label.toLowerCase();
   const back = `<button type="button" class="btn ghost" data-act="nav" data-v="0">← Back to Today</button>`;
@@ -593,7 +604,7 @@ function render(){
   $('picker').innerHTML = ORDER.map(id => `<button type="button" class="pick" data-act="biz" data-v="${id}" aria-pressed="${id===cur}"><i style="background:${B[id].accent}"></i>${esc(B[id].label)}</button>`).join('');
   const vl = { desk:"Owner's desk", phone:b.phoneLabel, cust:b.custLabel };
   $('views').innerHTML = Object.entries(vl).map(([k,l]) => `<button type="button" class="view" data-act="view" data-v="${k}" aria-pressed="${view===k}">${esc(l)}</button>`).join('');
-  $('feats').innerHTML = `<h2>Pick what you want</h2><p>Every plan includes the basics. Tap to add or remove extras and watch the screens change.</p><div class="chips">${CORE.map(c=>`<span class="fchip inc"><span class="dot" style="background:#9AA19F;border-color:#9AA19F">✓</span>${esc(c)}</span>`).join('')}</div><div class="chips">${FEATS.map(([id,l,d])=>{const o=has(s,id);return `<button type="button" class="fchip" data-act="feat" data-v="${id}" aria-pressed="${o}" title="${esc(d)}" style="${o?`border-color:${b.accent}`:''}"><span class="dot" style="${o?`background:${b.accent};border-color:${b.accent}`:''}">${o?'✓':''}</span>${esc(l)}</button>`}).join('')}<button type="button" class="fchip" data-act="resetAll" style="border-style:dashed">Start over with sample data</button></div>`;
+  $('feats').innerHTML = `<h2>Pick what you want</h2><p>Every plan includes the basics. Tap to add or remove extras and watch the screens change.</p><div class="chips">${CORE.map(c=>`<span class="fchip inc"><span class="dot" style="background:#9AA19F;border-color:#9AA19F">✓</span>${esc(c)}</span>`).join('')}</div><div class="chips">${FEATS.map(([id,l,d])=>{const o=has(s,id);return `<button type="button" class="fchip" data-act="feat" data-v="${id}" aria-pressed="${o}" title="${esc(d)}" style="${o?`border-color:${b.accent}`:''}"><span class="dot" style="${o?`background:${b.accent};border-color:${b.accent}`:''}">${o?'✓':''}</span>${esc(l)}</button>`}).join('')}<button type="button" class="fchip" data-act="resetAll" style="border-style:dashed">Start over with sample data</button><button type="button" class="btn" data-act="setup">Send me my setup</button></div>${s.setupOpen?setupPanel(b,s):''}`;
   $('stage').innerHTML = view === 'desk' ? renderDesk(b, s) : view === 'phone' ? renderPhone(b, s) : renderCust(b, s);
   $('notesFor').textContent = `Notes for ${b.label} · ${vl[view]}. They stay in this browser only.`;
   $('noteBox').value = notes[cur + ':' + view] || '';
@@ -626,6 +637,8 @@ document.addEventListener('click', e => {
   else if (a === 'nav') { s.nav = +v; view = 'desk'; }
   else if (a === 'toggle') s.off[v] = !s.off[v];
   else if (a === 'feat') { s.feat[v] = !has(s, v); if (s.nav && !has(s, featOf(b.nav[s.nav][0]))) s.nav = 0; persist(); }
+  else if (a === 'setup') { s.setupOpen = !s.setupOpen; s.setupSent = false; }
+  else if (a === 'setupSent') s.setupSent = true;
   else if (a === 'openAdd') s.addOpen = v || '';
   else if (a === 'saveAdd') { const nm = ($('fName').value || '').trim(); if (!nm) { $('fName').focus(); return; } s.added.push([($('fTime').value||'Any time').trim(), nm, ($('fWhere').value||'').trim() || '—', $('fType').value, $('fTeam').value, 0, 'New · just added']); s.addOpen = ''; persist(); }
   else if (a === 'saveStock') { const nm = ($('sName').value || '').trim(); if (!nm) { $('sName').focus(); return; } const l = $('sLvl').value; s.stock.push([nm, l==='g'?'Plenty':l==='y'?'Getting low':'Order now', l]); s.addOpen = ''; persist(); }
