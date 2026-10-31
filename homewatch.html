@@ -57,6 +57,14 @@ a{color:var(--teal)}
 .side .kd{font-size:13px;opacity:.85}
 .navi{display:flex;align-items:center;padding:11px 14px;border-radius:10px;font-weight:600;color:#F7F4ED;background:transparent;border:0;width:100%;text-align:left;font-size:16px;cursor:pointer;min-height:44px}.navi:hover{background:rgba(247,244,237,.10)}
 .sec-table{width:100%;border-collapse:collapse;font-size:15px;min-width:560px}.sec-table th{text-align:left;font-size:13px;color:var(--muted);padding:10px 12px;background:var(--soft)}.sec-table td{padding:12px;border-top:1px solid #EFEAE0}
+.feats{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.feats h2{margin:0;font-family:var(--display);font-size:18px}.feats p{margin:0;font-size:14px;color:var(--muted)}
+.fchip{min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid #D9D3C4;background:#fff;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.fchip .dot{width:18px;height:18px;border-radius:6px;border:2px solid #B8B0A0;display:grid;place-items:center;font-size:12px;color:#fff}
+.fchip.inc{cursor:default;background:var(--soft);color:var(--muted)}
+.addf{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:12px;border-radius:12px;background:#FFF8E8;border:1.5px dashed #E0B43A}
+.addf label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700}
+.addf input,.addf select{font:16px var(--body);min-height:42px;padding:0 10px;border-radius:9px;border:1.5px solid #CFC8B8;background:#fff}
 .sw{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #EFEAE0}
 .navi.on{background:rgba(247,244,237,.16);font-weight:700}
 .navi span{margin-left:auto;font-size:13px;font-weight:700}
@@ -162,6 +170,7 @@ a{color:var(--teal)}
 </head>
 <body>
 
+
 <div class="shell">
   <div class="bar">
     <a class="brand" href="#service" aria-label="Portals for Business demo">
@@ -173,6 +182,7 @@ a{color:var(--teal)}
     <button class="notesbtn" type="button" id="notesToggle" aria-expanded="true">Hide notes</button>
   </div>
   <div class="picker" role="group" aria-label="Pick a business" id="picker"></div>
+  <div class="feats" id="feats"></div>
   <div class="views" role="group" aria-label="Pick a screen" id="views"></div>
   <div class="stagewrap">
     <div class="stage" id="stage"></div>
@@ -366,7 +376,7 @@ const VIEWS = [['desk',"Owner's desk"],['phone','phone'],['cust','cust']];
 
 const S = {};
 function initState(b){
-  const s = { nav:0, off:{}, team:'all', sec:Object.keys(b.phone.sections)[0], phone:{}, sent:false, filter:'all', cust:{}, done:false, sig:'' };
+  const s = { nav:0, off:{}, feat:{}, added:[], stock:[], addOpen:'', team:'all', sec:Object.keys(b.phone.sections)[0], phone:{}, sent:false, filter:'all', cust:{}, done:false, sig:'' };
   for (const [k, xs] of Object.entries(b.phone.sections)) s.phone[k] = xs.map(x => x[2]);
   const c = b.customer;
   if (c.mode === 'book') c.groups.forEach((g, i) => {
@@ -377,7 +387,26 @@ function initState(b){
   if (c.mode === 'portal') { s.cust.choice = 0; s.cust.extras = c.extras.map(() => false); }
   return s;
 }
-const st = id => (S[id] ||= initState(B[id]));
+const FEATS = [
+  ['texts','Texting','Reminder texts, two-way texts, missed-call text-back'],
+  ['routes','Scheduling + routes','Best route for the day, crew calendar'],
+  ['photos','Photo reports','Before/after photos with time and GPS'],
+  ['stock','Supplies + inventory','What is running low and what to reorder'],
+  ['reviews','Reviews + referrals','Asks happy customers for Google reviews'],
+  ['recurring','Recurring visits','Weekly or monthly plans that book and bill themselves']];
+const CORE = ['Customers + jobs','Quotes + invoices','Card payments','Customer portal','Crew phone app','Custom checklists','Your logo + colors'];
+const featOf = t => { t = String(t).toLowerCase();
+  if (/text|waitlist|inquir|message|missed/.test(t)) return 'texts';
+  if (/route|schedule/.test(t)) return 'routes';
+  if (/suppl|equipment|material|product|stock/.test(t)) return 'stock';
+  if (/review|referral/.test(t)) return 'reviews';
+  if (/recurring|auto-billed|repeat/.test(t)) return 'recurring';
+  return null; };
+let SAVED = {}; try { SAVED = JSON.parse(localStorage.getItem('portals-demo-state') || '{}') || {}; } catch (e) { SAVED = {}; }
+function persist(){ const o = {}; for (const [id, x] of Object.entries(S)) o[id] = { feat:x.feat, added:x.added, stock:x.stock }; try { localStorage.setItem('portals-demo-state', JSON.stringify(o)); } catch (e) {} }
+const st = id => { if (!S[id]) { S[id] = initState(B[id]); const sv = SAVED[id]; if (sv) { Object.assign(S[id].feat, sv.feat || {}); S[id].added = sv.added || []; S[id].stock = sv.stock || []; } } return S[id]; };
+const has = (s, f) => !f || s.feat[f] !== false;
+const allItems = (b, s) => b.items.concat(s.added);
 const LOCK = 'homewatch';
 let cur = LOCK || 'service', view = 'desk';
 
@@ -389,45 +418,52 @@ function badgeFor(b, type){
 function lvlBadge(l, text){ const v = LV[l]; return `<span class="bdg" style="background:${v.bg};color:${v.fg}">${esc(text || v.t)}</span>`; }
 
 function renderDesk(b, s){
-  const items = b.items.filter(i => s.team === 'all' || i[4] === s.team);
+  const items = allItems(b, s).filter(i => s.team === 'all' || i[4] === s.team);
   const chip = (id, label) => `<button type="button" class="chip" data-act="team" data-v="${esc(id)}" aria-pressed="${s.team===id}" style="${s.team===id?`background:${b.accent};border-color:${b.accent};color:#fff`:''}">${esc(label)}</button>`;
   return `<div class="desk">
     <nav class="side" aria-label="${esc(b.name)} menu" style="background:${b.accent}">
       <div class="who"><span class="mono" style="color:${b.accent}">${esc(b.short)}</span><span><span class="nm">${esc(b.name)}</span><br><span class="kd">${esc(b.kind)}</span></span></div>
-      ${b.nav.map((n,i)=>`<button type="button" class="navi${i===s.nav?' on':''}" data-act="nav" data-v="${i}" aria-current="${i===s.nav?'page':'false'}">${esc(n[0])}<span>${esc(n[1])}</span></button>`).join('')}
+      ${b.nav.map((n,i)=>has(s,featOf(n[0]))?`<button type="button" class="navi${i===s.nav?' on':''}" data-act="nav" data-v="${i}" aria-current="${i===s.nav?'page':'false'}">${esc(n[0])}<span>${esc(n[1])}</span></button>`:'').join('')}
     </nav>
     ${s.nav ? renderSection(b, s) : `<div class="main">
       <div class="hd"><div><p>Tuesday, November 3</p><h1>Good morning, ${esc(b.owner)}</h1></div>
-        <div class="chips"><button type="button" class="btn ghost">+ New customer</button><button type="button" class="btn">+ New ${b.customer.mode==='book'?'booking':'job'}</button></div></div>
-      <section class="tiles" aria-label="At a glance">${b.tiles.map(t=>`<div class="tile"><b style="color:${t[3]?'#C2533F':b.accent}">${esc(t[0])}</b><strong>${esc(t[1])}</strong><span>${esc(t[2])}</span></div>`).join('')}</section>
+        <div class="chips"><button type="button" class="btn" data-act="openAdd" data-v="job">+ New ${b.customer.mode==='book'?'booking':'job'}</button></div></div>
+      <section class="tiles" aria-label="At a glance">${b.tiles.filter(t=>has(s,featOf(t[1]))).map(t=>`<div class="tile"><b style="color:${t[3]?'#C2533F':b.accent}">${esc(t[0])}</b><strong>${esc(t[1])}</strong><span>${esc(t[2])}</span></div>`).join('')}</section>
       <div class="cols">
         <section class="panel left" aria-label="${esc(b.listTitle)}">
-          <div class="rowx" style="flex-wrap:wrap"><h2>${esc(b.listTitle)}</h2><div class="chips" role="group" aria-label="Filter">${chip('all','All')}${b.teams.map(t=>chip(t,t)).join('')}</div></div>
+          ${s.addOpen==='job'?addForm(b):''}<div class="rowx" style="flex-wrap:wrap"><h2>${esc(b.listTitle)}</h2><div class="chips" role="group" aria-label="Filter">${chip('all','All')}${b.teams.map(t=>chip(t,t)).join('')}</div></div>
           ${items.map(i=>`<div class="item"><span class="t">${esc(i[0])}</span><div style="min-width:0"><div class="w">${esc(i[1])} <small>· ${esc(i[2])}</small></div><div class="badges">${badgeFor(b,i[3])}<span class="bdg" style="background:#E8EDF0;color:#2C3A43">${esc(i[4])}</span>${i[7]?`<span class="bdg" style="background:#FFF3CC;color:#6E4D00">${esc(i[7])}</span>`:''}</div></div>
             <div style="display:flex;flex-direction:column;gap:4px"><span class="stat" style="color:${i[5]===100?'#1F5C38':i[5]>0?'#24486B':'#55605F'}">${esc(i[6])}</span><div class="prog"><div style="width:${i[5]}%;background:${i[5]===100?'#2E7D4F':b.accent}"></div></div></div></div>`).join('')}
         </section>
         <div class="right">
           <section class="panel vs" aria-label="October: you vs your CRM"><h2>October: you vs. your CRM</h2>
             <div class="vsg"><div style="background:var(--soft)"><span class="lab" style="color:var(--muted)">What you did</span>${b.you.map(k=>`<div class="kv"><span>${esc(k[0])}</span><strong>${esc(k[1])}</strong></div>`).join('')}</div>
-            <div style="background:${b.accent};color:#F7F4ED"><span class="lab">What your CRM did</span>${b.crm.map(k=>`<div class="kv"><span>${esc(k[0])}</span><strong>${esc(k[1])}</strong></div>`).join('')}<div class="saved-h">About ${b.saved} hours of office work saved</div></div></div></section>
-          <section class="panel" aria-label="${esc(b.side.title)}"><h2>${esc(b.side.title)}</h2>${b.side.rows.map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}</section>
-          <section class="panel" aria-label="${esc(b.side2.title)}"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Open</button></div>`).join('')}</section>
+            <div style="background:${b.accent};color:#F7F4ED"><span class="lab">What your CRM did</span>${b.crm.filter(k=>has(s,featOf(k[0]))).map(k=>`<div class="kv"><span>${esc(k[0])}</span><strong>${esc(k[1])}</strong></div>`).join('')}<div class="saved-h">About ${b.saved} hours of office work saved</div></div></div></section>
+          ${has(s,featOf(b.side.title))?`<section class="panel" aria-label="${esc(b.side.title)}"><h2>${esc(b.side.title)}</h2>${b.side.rows.concat(s.stock).map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}</section>`:''}
+          ${has(s,featOf(b.side2.title))?`<section class="panel" aria-label="${esc(b.side2.title)}"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Open</button></div>`).join('')}</section>`:''}
         </div>
       </div>
     </div>`}</div>`;
 }
 
+function addForm(b){
+  const types = [...new Set(b.items.map(i => i[3]))];
+  return `<div class="addf" role="group" aria-label="Add new"><label>Customer name<input id="fName" placeholder="Name" autocomplete="off"></label><label>Town or note<input id="fWhere" placeholder="Eden"></label><label>Type<select id="fType">${types.map(t=>`<option>${esc(t)}</option>`).join('')}</select></label><label>Time<input id="fTime" placeholder="2:00"></label><label>Who goes<select id="fTeam">${b.teams.map(t=>`<option>${esc(t)}</option>`).join('')}</select></label><div style="display:flex;gap:8px;align-items:flex-end"><button type="button" class="btn" data-act="saveAdd">Save</button><button type="button" class="btn ghost" data-act="openAdd" data-v="">Cancel</button></div></div>`;
+}
+function stockForm(){
+  return `<div class="addf" role="group" aria-label="Add item"><label>Item<input id="sName" placeholder="Item name"></label><label>How much is left<select id="sLvl"><option value="g">Plenty</option><option value="y">Getting low</option><option value="r">Out / order now</option></select></label><div style="display:flex;gap:8px;align-items:flex-end"><button type="button" class="btn" data-act="saveStock">Save</button><button type="button" class="btn ghost" data-act="openAdd" data-v="">Cancel</button></div></div>`;
+}
 function renderSection(b, s){
   const label = b.nav[s.nav][0], L = label.toLowerCase();
   const back = `<button type="button" class="btn ghost" data-act="nav" data-v="0">← Back to Today</button>`;
   let body = '';
   if (/text|message|waitlist|inquir/.test(L)) body = `<section class="panel"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Reply</button></div>`).join('')}</section>`;
-  else if (/suppl|equipment|material|product|vaccine|permit|open items|stock/.test(L)) body = `<section class="panel"><h2>${esc(b.side.title)}</h2>${b.side.rows.map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}<button type="button" class="btn" style="align-self:flex-start">+ Add</button></section>`;
+  else if (/suppl|equipment|material|product|vaccine|permit|open items|stock/.test(L)) body = `<section class="panel"><h2>${esc(b.side.title)}</h2>${b.side.rows.concat(s.stock).map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}${s.addOpen==='stock'?stockForm():`<button type="button" class="btn" style="align-self:flex-start" data-act="openAdd" data-v="stock">+ Add</button>`}</section>`;
   else if (/checklist|formula/.test(L)) body = Object.entries(b.phone.sections).map(([k,xs])=>`<section class="panel"><h2>${esc(k)}</h2>${xs.map(x=>`<div class="rowx"><span>${esc(x[0])}</span>${x[1]?'<span class="bdg" style="background:#FFF3CC;color:#6E4D00">Photo needed</span>':''}</div>`).join('')}</section>`).join('') + `<button type="button" class="btn" style="align-self:flex-start">+ New checklist</button>`;
   else if (/setting/.test(L)) body = `<section class="panel"><h2>Your features</h2>${['Reminder texts','Online booking + quotes','Review requests','Card payments + auto-charge','Customer portal','Crew phones'].map((f,i)=>{const on=!(s.off||{})[i];return `<div class="sw"><span>${f}</span><button type="button" class="chip" data-act="toggle" data-v="${i}" aria-pressed="${on}" style="${on?`background:${b.accent};border-color:${b.accent};color:#fff`:''}">${on?'On':'Off'}</button></div>`}).join('')}</section>`;
   else {
     const cta = /book|appoint|bid|commission|job|quote|dashboard/.test(L) ? `<button type="button" class="btn" data-act="view" data-v="cust">See what the customer sees</button>` : '';
-    body = `<section class="panel"><div class="rowx" style="flex-wrap:wrap"><h2>${esc(label)}</h2><div class="chips">${cta}<button type="button" class="btn ghost">+ Add</button></div></div><div style="overflow-x:auto"><table class="sec-table"><thead><tr><th>Name</th><th>Where</th><th>Type</th><th>Team</th><th>Status</th></tr></thead><tbody>${b.items.map(i=>`<tr><td><strong>${esc(i[1])}</strong></td><td>${esc(i[2])}</td><td>${badgeFor(b,i[3])}</td><td>${esc(i[4])}</td><td>${esc(i[6])}</td></tr>`).join('')}</tbody></table></div></section>`;
+    body = `<section class="panel"><div class="rowx" style="flex-wrap:wrap"><h2>${esc(label)}</h2><div class="chips">${cta}<button type="button" class="btn ghost" data-act="openAdd" data-v="job">+ Add</button></div></div>${s.addOpen==='job'?addForm(b):''}<div style="overflow-x:auto"><table class="sec-table"><thead><tr><th>Name</th><th>Where</th><th>Type</th><th>Team</th><th>Status</th></tr></thead><tbody>${allItems(b,s).map(i=>`<tr><td><strong>${esc(i[1])}</strong></td><td>${esc(i[2])}</td><td>${badgeFor(b,i[3])}</td><td>${esc(i[4])}</td><td>${esc(i[6])}</td></tr>`).join('')}</tbody></table></div></section>`;
   }
   return `<div class="main"><div class="hd"><div><p>${esc(b.name)}</p><h1>${esc(label)}</h1></div>${back}</div>${body}<p style="margin:0;font-size:14px;color:var(--muted)">Sample screen. The real one is built around this business.</p></div>`;
 }
@@ -446,7 +482,7 @@ function renderPhone(b, s){
       const btn = l => `<button type="button" class="rb" data-act="rate" data-i="${i}" data-v="${l}" aria-pressed="${v===l}" style="${v===l?`background:${LV[l].bg};border-color:${LV[l].bd};color:${LV[l].fg}`:''}">${LV[l].t}</button>`;
       return `<div class="rate" style="${v?`background:${LV[v].bg};border-color:${LV[v].bd}`:''}"><span class="tx">${esc(x[0])}</span><div class="rbtns" role="group" aria-label="${esc(x[0])}">${btn('g')}${btn('y')}${btn('r')}</div>${(v==='y'||v==='r')?'<span style="font-size:13px;font-weight:700;color:#6E4D00">Add a photo and a short note</span>':''}</div>`;
     }
-    return `<div class="task"><button type="button" class="box" data-act="check" data-i="${i}" aria-pressed="${!!v}" aria-label="${esc(x[0])}" style="${v?`background:${b.accent};border-color:${b.accent}`:''}">${v?'✓':''}</button><span class="tx${v?' done':''}">${esc(x[0])}</span>${x[1]?`<span class="cam" style="${v?'background:#E3F1E7;color:#1F5C38':'background:#FFF3CC;color:#6E4D00'}">${v?'Photo added':'Photo needed'}</span>`:''}</div>`;
+    return `<div class="task"><button type="button" class="box" data-act="check" data-i="${i}" aria-pressed="${!!v}" aria-label="${esc(x[0])}" style="${v?`background:${b.accent};border-color:${b.accent}`:''}">${v?'✓':''}</button><span class="tx${v?' done':''}">${esc(x[0])}</span>${x[1]&&has(s,'photos')?`<span class="cam" style="${v?'background:#E3F1E7;color:#1F5C38':'background:#FFF3CC;color:#6E4D00'}">${v?'Photo added':'Photo needed'}</span>`:''}</div>`;
   }).join('');
   const head = p.mode === 'rate'
     ? `<div style="display:flex;gap:6px;flex-wrap:wrap;font-size:13px;font-weight:800">${['g','y','r'].map(l=>`<span style="padding:4px 10px;border-radius:999px;background:${LV[l].bg};color:${LV[l].fg}">${LV[l].t.split(' ')[0]} ${counts[l]} ${l==='g'?'good':l==='y'?'watch':'fix now'}</span>`).join('')}</div>`
@@ -476,6 +512,7 @@ function renderCust(b, s){
   let body = '', foot = '';
   if (c.mode === 'book') {
     body = c.groups.map((g, i) => {
+      if (g.kind === 'freq' && !has(s,'recurring')) return '';
       if (g.kind === 'one' || g.kind === 'freq') return `<div class="grp"><span>${esc(g.label)}</span><div class="opts">${g.options.map((o,j)=>`<button type="button" class="opt" data-act="one" data-g="${i}" data-i="${j}" aria-pressed="${s.cust[i]===j}" style="${on(s.cust[i]===j)}">${esc(o[0])}${g.kind==='freq'&&o[1]?` · ${Math.round(o[1]*100)}% off`:''}</button>`).join('')}</div></div>`;
       if (g.kind === 'count') return `<div class="opts">${g.items.map((x,j)=>{const n=s.cust[i][j];return `<div class="cnt"><span>${n} ${esc(x[0])}${n===1?'':'s'}</span><span style="display:flex;gap:4px"><button type="button" data-act="cnt" data-g="${i}" data-i="${j}" data-v="-1" aria-label="Fewer">−</button><button type="button" data-act="cnt" data-g="${i}" data-i="${j}" data-v="1" aria-label="More">+</button></span></div>`;}).join('')}</div>`;
       if (g.kind === 'multi') return `<div class="grp"><span>${esc(g.label)}</span><div class="chips">${g.options.map((o,j)=>`<button type="button" class="opt" data-act="multi" data-g="${i}" data-i="${j}" aria-pressed="${s.cust[i][j]}" style="${on(s.cust[i][j])}">${esc(o[0])}${o[1]?` +$${o[1]}`:''}</button>`).join('')}</div></div>`;
@@ -520,6 +557,7 @@ function render(){
   $('picker').innerHTML = ORDER.map(id => `<button type="button" class="pick" data-act="biz" data-v="${id}" aria-pressed="${id===cur}"><i style="background:${B[id].accent}"></i>${esc(B[id].label)}</button>`).join('');
   const vl = { desk:"Owner's desk", phone:b.phoneLabel, cust:b.custLabel };
   $('views').innerHTML = Object.entries(vl).map(([k,l]) => `<button type="button" class="view" data-act="view" data-v="${k}" aria-pressed="${view===k}">${esc(l)}</button>`).join('');
+  $('feats').innerHTML = `<h2>Pick what you want</h2><p>Every plan includes the basics. Tap to add or remove extras and watch the screens change.</p><div class="chips">${CORE.map(c=>`<span class="fchip inc"><span class="dot" style="background:#9AA19F;border-color:#9AA19F">✓</span>${esc(c)}</span>`).join('')}</div><div class="chips">${FEATS.map(([id,l,d])=>{const o=has(s,id);return `<button type="button" class="fchip" data-act="feat" data-v="${id}" aria-pressed="${o}" title="${esc(d)}" style="${o?`border-color:${b.accent}`:''}"><span class="dot" style="${o?`background:${b.accent};border-color:${b.accent}`:''}">${o?'✓':''}</span>${esc(l)}</button>`}).join('')}<button type="button" class="fchip" data-act="resetAll" style="border-style:dashed">Start over with sample data</button></div>`;
   $('stage').innerHTML = view === 'desk' ? renderDesk(b, s) : view === 'phone' ? renderPhone(b, s) : renderCust(b, s);
   $('notesFor').textContent = `Notes for ${b.label} · ${vl[view]}. They stay in this browser only.`;
   $('noteBox').value = notes[cur + ':' + view] || '';
@@ -551,6 +589,11 @@ document.addEventListener('click', e => {
   else if (a === 'team') s.team = v;
   else if (a === 'nav') { s.nav = +v; view = 'desk'; }
   else if (a === 'toggle') s.off[v] = !s.off[v];
+  else if (a === 'feat') { s.feat[v] = !has(s, v); if (s.nav && !has(s, featOf(b.nav[s.nav][0]))) s.nav = 0; persist(); }
+  else if (a === 'openAdd') s.addOpen = v || '';
+  else if (a === 'saveAdd') { const nm = ($('fName').value || '').trim(); if (!nm) { $('fName').focus(); return; } s.added.push([($('fTime').value||'Any time').trim(), nm, ($('fWhere').value||'').trim() || '—', $('fType').value, $('fTeam').value, 0, 'New · just added']); s.addOpen = ''; persist(); }
+  else if (a === 'saveStock') { const nm = ($('sName').value || '').trim(); if (!nm) { $('sName').focus(); return; } const l = $('sLvl').value; s.stock.push([nm, l==='g'?'Plenty':l==='y'?'Getting low':'Order now', l]); s.addOpen = ''; persist(); }
+  else if (a === 'resetAll') { S[cur] = initState(b); persist(); }
   else if (a === 'sec') s.sec = v;
   else if (a === 'check') { s.phone[s.sec][i] = !s.phone[s.sec][i]; s.sent = false; }
   else if (a === 'rate') { s.phone[s.sec][i] = s.phone[s.sec][i] === v ? '' : v; s.sent = false; }
@@ -572,5 +615,6 @@ function fromHash(){ if (LOCK) return; const h = (location.hash || '').slice(1);
 window.addEventListener('hashchange', () => { fromHash(); render(); });
 fromHash(); render();
 </script>
+
 </body>
 </html>

@@ -1,24 +1,63 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Portals CRM Demos</title>
+<title>Portals for Business · CRM Demo</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>
-body{margin:0;background:#F7F4ED;color:#252D32;font:17px/1.5 'Source Sans 3',system-ui,sans-serif;padding:24px max(16px,env(safe-area-inset-left,0px))}
-.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
-h1{margin:0;font:800 clamp(2rem,4vw,2.8rem)/1.1 Manrope,sans-serif;color:#174C4F}
-p{margin:0;color:#3A4448}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.card{display:flex;flex-direction:column;gap:4px;padding:20px;border-radius:16px;background:#fff;border:1px solid #E4DED0;text-decoration:none;color:#252D32}
-.card:hover,.card:focus-visible{border-color:#174C4F;outline:none;box-shadow:0 0 0 2px #174C4F}
-.card i{width:36px;height:8px;border-radius:99px;margin-bottom:8px}
-.card b{font:800 21px Manrope,sans-serif}
-.card span{font-size:15px;color:#55605F}
-.brand{display:flex;align-items:center;gap:10px;color:#174C4F;font:800 22px Manrope,sans-serif}
-.small{font-size:15px;color:#55605F}
-</style></head><body><div class="wrap">
-<div class="brand"><svg viewBox="0 6 128 128" width="40" height="40" aria-hidden="true"><path fill="#174C4F" d="M20 46 L108 26 L108 114 L122 120 L94 120 L94 42 L34 56 L34 120 L6 120 L20 114 Z"/><path fill="#E67562" d="M40 57.6 L88 46.4 L88 120 L81 120 L81 55 L47 63 L47 120 L40 120 Z"/><path fill="#A9432F" d="M47 63 L81 55 L81 120 L47 120 Z"/><path fill="#E67562" d="M48 69 L68 58 L68 120 L48 116.5 Z"/></svg>Portals for Business</div>
-<h1>CRM demos by business type</h1>
-<p>Pick a business. Each one has three screens: the owner's desk, the crew's phone and what the customer sees. Everything is clickable, and all names and numbers are sample data.</p>
-<div class="grid"><a class="card" href="service.html"><i style="background:#174C4F"></i><b>Service / handyman</b><span>Sample: Ridgeline Home Repair</span></a><a class="card" href="cleaning.html"><i style="background:#3F5D3A"></i><b>Cleaning</b><span>Sample: Sparrow & Sage Cleaning</span></a><a class="card" href="homewatch.html"><i style="background:#2E5A88"></i><b>Home watch</b><span>Sample: Valley Home Watch</span></a><a class="card" href="inspector.html"><i style="background:#3B4F7A"></i><b>Home inspector</b><span>Sample: Summit Ridge Home Inspections</span></a><a class="card" href="landscaping.html"><i style="background:#4C6B2F"></i><b>Landscaping</b><span>Sample: Greenline Lawn & Landscape</span></a><a class="card" href="grooming.html"><i style="background:#6B4A8A"></i><b>Pet grooming</b><span>Sample: Wag & Wash Grooming</span></a><a class="card" href="salon.html"><i style="background:#8C3F55"></i><b>Hair salon</b><span>Sample: Willow Hair Studio</span></a><a class="card" href="maker.html"><i style="background:#6B3E5E"></i><b>Artist / maker</b><span>Sample: Juniper & Stone Jewelry</span></a></div>
-<p class="small"><a href="all-in-one.html">See all 8 on one page</a></p>
-</div></body></html>
+*{box-sizing:border-box}
+body{margin:0;background:#F7F4ED;color:#252D32;font:18px/1.5 'Source Sans 3',system-ui,sans-serif}
+.in{max-width:1150px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header .in{display:flex;align-items:center;gap:10px;padding-block:14px}
+.brand b{display:block;font:800 22px/1 Manrope,sans-serif;color:#174C4F}.brand small{font:700 12px Manrope,sans-serif;color:#3A4448;letter-spacing:.04em}
+.hero .in{padding-block:48px 36px;display:flex;flex-direction:column;gap:16px}
+h1{margin:0;font:800 clamp(2.4rem,5vw,3.8rem)/1.05 Manrope,sans-serif;color:#174C4F;text-wrap:balance}
+h2{margin:0;font:800 clamp(1.7rem,3vw,2.3rem)/1.15 Manrope,sans-serif;color:#174C4F}
+.lead{margin:0;font-size:21px;color:#3A4448;max-width:36em}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#A9432F;margin:0}
+section .in{padding-block:28px;display:flex;flex-direction:column;gap:18px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.box{background:#fff;border:1px solid #E4DED0;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:8px}
+.box h3{margin:0;font:800 21px Manrope,sans-serif}.box p{margin:0;color:#3A4448}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.steps li{background:#EDE8DC;border-radius:18px;padding:20px;display:flex;gap:14px;align-items:flex-start}
+.steps b.n{flex:none;width:42px;height:42px;border-radius:999px;background:#174C4F;color:#fff;display:grid;place-items:center;font:800 18px Manrope,sans-serif}
+.steps strong{display:block;font:800 19px Manrope,sans-serif}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;gap:4px;padding:20px;border-radius:16px;background:#fff;border:1px solid #E4DED0;text-decoration:none;color:#252D32;min-height:44px}
+.card:hover,.card:focus-visible{outline:none;box-shadow:0 0 0 3px #174C4F}
+.card i{width:40px;height:8px;border-radius:99px;margin-bottom:8px}
+.card b{font:800 21px Manrope,sans-serif}.card span{font-size:15px;color:#55605F}.card em{font-style:normal;font-weight:700;color:#174C4F;margin-top:6px}
+.cta{background:#174C4F;color:#F7F4ED;border-radius:20px;padding:26px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center}
+.cta h2{color:#F7F4ED;font-size:26px}.cta p{margin:0;color:#DCE6E2}
+footer .in{padding-block:30px;color:#55605F;font-size:15px}
+</style></head><body>
+<header><div class="in"><span class="brand" style="display:flex;align-items:center;gap:10px"><svg viewBox="0 6 128 128" width="44" height="44" aria-hidden="true"><path fill="#174C4F" d="M20 46 L108 26 L108 114 L122 120 L94 120 L94 42 L34 56 L34 120 L6 120 L20 114 Z"/><path fill="#E67562" d="M40 57.6 L88 46.4 L88 120 L81 120 L81 55 L47 63 L47 120 L40 120 Z"/><path fill="#A9432F" d="M47 63 L81 55 L81 120 L47 120 Z"/><path fill="#E67562" d="M48 69 L68 58 L68 120 L48 116.5 Z"/><circle cx="64.5" cy="90" r="1.9" fill="#F7F4ED"/></svg><span><b>Portals</b><small>for Business</small></span></span></div></header>
+<div class="hero"><div class="in">
+  <p class="eyebrow">Websites · CRMs · Customer portals · Automations</p>
+  <h1>Your business. Your way of working.</h1>
+  <p class="lead">We build the system your business runs on: a CRM, a customer portal and a website, set up around how you already work. You only get the parts you use.</p>
+</div></div>
+<section><div class="in">
+  <p class="eyebrow">What we build</p><h2>One system, made for your business</h2>
+  <div class="grid4">
+    <div class="box"><h3>Your CRM</h3><p>Customers, quotes, jobs, the calendar, invoices and card payments. Works on any phone or computer.</p></div>
+    <div class="box"><h3>Crew phone app</h3><p>Today's jobs, checklists, photos and directions in your crew's pocket.</p></div>
+    <div class="box"><h3>Customer portal</h3><p>Your customers open one link to book, see quotes, sign, pay and get reports with photos.</p></div>
+    <div class="box"><h3>Automations</h3><p>Reminder texts, review requests, follow-ups and receipts that go out on their own.</p></div>
+  </div>
+</div></section>
+<section><div class="in">
+  <p class="eyebrow">How this demo works</p><h2>Try it like it's yours</h2>
+  <ol class="steps">
+    <li><b class="n">1</b><span><strong>Pick your business</strong>Choose the kind of business closest to yours below.</span></li>
+    <li><b class="n">2</b><span><strong>Pick what you want</strong>Turn extras on or off at the top. The screens change to match.</span></li>
+    <li><b class="n">3</b><span><strong>Click around and add things</strong>Add a job or a customer, check off a checklist, and see what your customers see.</span></li>
+  </ol>
+</div></section>
+<section><div class="in">
+  <p class="eyebrow">Step 1</p><h2>Pick your business</h2>
+  <div class="cards"><a class="card" href="service.html"><i style="background:#174C4F"></i><b>Service / handyman</b><span>Sample: Ridgeline Home Repair</span><em>Open the demo →</em></a><a class="card" href="cleaning.html"><i style="background:#3F5D3A"></i><b>Cleaning</b><span>Sample: Sparrow & Sage Cleaning</span><em>Open the demo →</em></a><a class="card" href="homewatch.html"><i style="background:#2E5A88"></i><b>Home watch</b><span>Sample: Valley Home Watch</span><em>Open the demo →</em></a><a class="card" href="inspector.html"><i style="background:#3B4F7A"></i><b>Home inspector</b><span>Sample: Summit Ridge Home Inspections</span><em>Open the demo →</em></a><a class="card" href="landscaping.html"><i style="background:#4C6B2F"></i><b>Landscaping</b><span>Sample: Greenline Lawn & Landscape</span><em>Open the demo →</em></a><a class="card" href="grooming.html"><i style="background:#6B4A8A"></i><b>Pet grooming</b><span>Sample: Wag & Wash Grooming</span><em>Open the demo →</em></a><a class="card" href="salon.html"><i style="background:#8C3F55"></i><b>Hair salon</b><span>Sample: Willow Hair Studio</span><em>Open the demo →</em></a><a class="card" href="maker.html"><i style="background:#6B3E5E"></i><b>Artist / maker</b><span>Sample: Juniper & Stone Jewelry</span><em>Open the demo →</em></a></div>
+  <p style="margin:0;color:#55605F;font-size:15px">Every name and number in the demos is sample data. What you add stays only in your browser.</p>
+</div></section>
+<section><div class="in"><div class="cta"><div style="flex:1 1 380px;display:flex;flex-direction:column;gap:6px"><h2>Don't see your business?</h2><p>We can design a package for nearly any type of business. Ask us and we'll build a demo for yours.</p></div></div></div></section>
+<footer><div class="in">Portals for Business · Built around your business. · Northern Utah · <a href="all-in-one.html" style="color:#174C4F">All 8 demos on one page</a></div></footer>
+</body></html>
