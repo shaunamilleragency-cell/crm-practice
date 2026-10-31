@@ -55,7 +55,9 @@ a{color:var(--teal)}
 .mono{width:44px;height:44px;border-radius:10px;background:#F7F4ED;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;flex:none}
 .side .nm{font-family:var(--display);font-weight:800;font-size:16px;line-height:1.2}
 .side .kd{font-size:13px;opacity:.85}
-.navi{display:flex;align-items:center;padding:11px 14px;border-radius:10px;font-weight:600;color:#F7F4ED}
+.navi{display:flex;align-items:center;padding:11px 14px;border-radius:10px;font-weight:600;color:#F7F4ED;background:transparent;border:0;width:100%;text-align:left;font-size:16px;cursor:pointer;min-height:44px}.navi:hover{background:rgba(247,244,237,.10)}
+.sec-table{width:100%;border-collapse:collapse;font-size:15px;min-width:560px}.sec-table th{text-align:left;font-size:13px;color:var(--muted);padding:10px 12px;background:var(--soft)}.sec-table td{padding:12px;border-top:1px solid #EFEAE0}
+.sw{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #EFEAE0}
 .navi.on{background:rgba(247,244,237,.16);font-weight:700}
 .navi span{margin-left:auto;font-size:13px;font-weight:700}
 .main{flex:999 1 560px;min-width:0;padding:28px 32px;display:flex;flex-direction:column;gap:22px}
@@ -364,7 +366,7 @@ const VIEWS = [['desk',"Owner's desk"],['phone','phone'],['cust','cust']];
 
 const S = {};
 function initState(b){
-  const s = { team:'all', sec:Object.keys(b.phone.sections)[0], phone:{}, sent:false, filter:'all', cust:{}, done:false, sig:'' };
+  const s = { nav:0, off:{}, team:'all', sec:Object.keys(b.phone.sections)[0], phone:{}, sent:false, filter:'all', cust:{}, done:false, sig:'' };
   for (const [k, xs] of Object.entries(b.phone.sections)) s.phone[k] = xs.map(x => x[2]);
   const c = b.customer;
   if (c.mode === 'book') c.groups.forEach((g, i) => {
@@ -392,9 +394,9 @@ function renderDesk(b, s){
   return `<div class="desk">
     <nav class="side" aria-label="${esc(b.name)} menu" style="background:${b.accent}">
       <div class="who"><span class="mono" style="color:${b.accent}">${esc(b.short)}</span><span><span class="nm">${esc(b.name)}</span><br><span class="kd">${esc(b.kind)}</span></span></div>
-      ${b.nav.map((n,i)=>`<span class="navi${i===0?' on':''}">${esc(n[0])}<span>${esc(n[1])}</span></span>`).join('')}
+      ${b.nav.map((n,i)=>`<button type="button" class="navi${i===s.nav?' on':''}" data-act="nav" data-v="${i}" aria-current="${i===s.nav?'page':'false'}">${esc(n[0])}<span>${esc(n[1])}</span></button>`).join('')}
     </nav>
-    <div class="main">
+    ${s.nav ? renderSection(b, s) : `<div class="main">
       <div class="hd"><div><p>Tuesday, November 3</p><h1>Good morning, ${esc(b.owner)}</h1></div>
         <div class="chips"><button type="button" class="btn ghost">+ New customer</button><button type="button" class="btn">+ New ${b.customer.mode==='book'?'booking':'job'}</button></div></div>
       <section class="tiles" aria-label="At a glance">${b.tiles.map(t=>`<div class="tile"><b style="color:${t[3]?'#C2533F':b.accent}">${esc(t[0])}</b><strong>${esc(t[1])}</strong><span>${esc(t[2])}</span></div>`).join('')}</section>
@@ -412,7 +414,22 @@ function renderDesk(b, s){
           <section class="panel" aria-label="${esc(b.side2.title)}"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Open</button></div>`).join('')}</section>
         </div>
       </div>
-    </div></div>`;
+    </div>`}</div>`;
+}
+
+function renderSection(b, s){
+  const label = b.nav[s.nav][0], L = label.toLowerCase();
+  const back = `<button type="button" class="btn ghost" data-act="nav" data-v="0">← Back to Today</button>`;
+  let body = '';
+  if (/text|message|waitlist|inquir/.test(L)) body = `<section class="panel"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Reply</button></div>`).join('')}</section>`;
+  else if (/suppl|equipment|material|product|vaccine|permit|open items|stock/.test(L)) body = `<section class="panel"><h2>${esc(b.side.title)}</h2>${b.side.rows.map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}<button type="button" class="btn" style="align-self:flex-start">+ Add</button></section>`;
+  else if (/checklist|formula/.test(L)) body = Object.entries(b.phone.sections).map(([k,xs])=>`<section class="panel"><h2>${esc(k)}</h2>${xs.map(x=>`<div class="rowx"><span>${esc(x[0])}</span>${x[1]?'<span class="bdg" style="background:#FFF3CC;color:#6E4D00">Photo needed</span>':''}</div>`).join('')}</section>`).join('') + `<button type="button" class="btn" style="align-self:flex-start">+ New checklist</button>`;
+  else if (/setting/.test(L)) body = `<section class="panel"><h2>Your features</h2>${['Reminder texts','Online booking + quotes','Review requests','Card payments + auto-charge','Customer portal','Crew phones'].map((f,i)=>{const on=!(s.off||{})[i];return `<div class="sw"><span>${f}</span><button type="button" class="chip" data-act="toggle" data-v="${i}" aria-pressed="${on}" style="${on?`background:${b.accent};border-color:${b.accent};color:#fff`:''}">${on?'On':'Off'}</button></div>`}).join('')}</section>`;
+  else {
+    const cta = /book|appoint|bid|commission|job|quote|dashboard/.test(L) ? `<button type="button" class="btn" data-act="view" data-v="cust">See what the customer sees</button>` : '';
+    body = `<section class="panel"><div class="rowx" style="flex-wrap:wrap"><h2>${esc(label)}</h2><div class="chips">${cta}<button type="button" class="btn ghost">+ Add</button></div></div><div style="overflow-x:auto"><table class="sec-table"><thead><tr><th>Name</th><th>Where</th><th>Type</th><th>Team</th><th>Status</th></tr></thead><tbody>${b.items.map(i=>`<tr><td><strong>${esc(i[1])}</strong></td><td>${esc(i[2])}</td><td>${badgeFor(b,i[3])}</td><td>${esc(i[4])}</td><td>${esc(i[6])}</td></tr>`).join('')}</tbody></table></div></section>`;
+  }
+  return `<div class="main"><div class="hd"><div><p>${esc(b.name)}</p><h1>${esc(label)}</h1></div>${back}</div>${body}<p style="margin:0;font-size:14px;color:var(--muted)">Sample screen. The real one is built around this business.</p></div>`;
 }
 
 function renderPhone(b, s){
@@ -532,6 +549,8 @@ document.addEventListener('click', e => {
   if (a === 'biz') { cur = v; try { history.replaceState(null, '', '#' + v); } catch (x) {} }
   else if (a === 'view') view = v;
   else if (a === 'team') s.team = v;
+  else if (a === 'nav') { s.nav = +v; view = 'desk'; }
+  else if (a === 'toggle') s.off[v] = !s.off[v];
   else if (a === 'sec') s.sec = v;
   else if (a === 'check') { s.phone[s.sec][i] = !s.phone[s.sec][i]; s.sent = false; }
   else if (a === 'rate') { s.phone[s.sec][i] = s.phone[s.sec][i] === v ? '' : v; s.sent = false; }
