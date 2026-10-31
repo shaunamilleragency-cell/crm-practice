@@ -352,6 +352,26 @@ salon:{ name:'Willow Hair Studio', short:'WH', kind:'Hair salon', accent:'#8C3F5
       {kind:'multi',label:'Add extras',options:[['Deep conditioning',25],['Gloss',35],['Bang trim',0]]}]},
   why:'Booking by stylist, saved color formulas, waitlist texts for open spots, rebooking and product stock.'},
 
+realtor:{ name:'Summit Peak Realty', short:'SP', kind:'Real estate agent', accent:'#28536B', owner:'Jenna', label:'Realtor',
+  nav:[['Today',''],['Website leads','4'],['Buyers',''],['Sellers',''],['Listings',''],['Showings',''],['Deals','3'],['Open houses',''],['Past clients',''],['Texts','2'],['Settings','']],
+  tiles:[['4','New leads','2 from your website tonight',1],['3','Showings today','Garcia family at 9:30'],['3','Under contract','1 deadline tomorrow',1],['2','Closings this month','Nov 14 and Nov 25']],
+  listTitle:"Today's schedule", teams:['Jenna','Mark'],
+  items:[['9:30','Garcia family','Eden','Showing (3 homes)','Jenna',100,'Done · liked 2 of 3'],['12:00','Aspen Ridge home','Huntsville','Listing appointment','Jenna',0,'Up next','Bring comps'],['2:00','Lee family','Liberty','Showing','Mark',0,'Confirmed by text'],['5:00','Valley View home','Eden','Open house','Jenna',0,'Sign-in ready']],
+  you:[['Showings','41'],['Offers written','7'],['Closed','4'],['Earned','$38,900']],
+  crm:[['Lead follow-up texts','212'],['Leads from your website','26'],['Deadline reminders','38'],['Home anniversary texts','9'],['New reviews','5']], saved:22,
+  side:{title:'Contract deadlines',rows:[['Patel · financing + appraisal','Tomorrow','r'],['Garcia · due diligence','Ends Friday','y'],['Moore · settlement','Nov 25','g']]},
+  side2:{title:'Texts',rows:[['Ana Garcia','Can we see the Eden one again Saturday?'],['Website lead: Tom Reed','Is the Valley View home still available?']]},
+  leads:[['Tom Reed','Asked about the Valley View home','Website','New'],['Kara Lund','Wants 3 bed in Liberty','Zillow','Texted back'],['Ben Ortiz','Signed in at the open house','Open house','Follow up Monday'],['Liz Park','Called the yard sign','Phone','New']],
+  phoneLabel:"Agent's phone",
+  phone:{title:'Showing · Garcia family', sub:'Jenna · 3 homes · Eden', mode:'check',
+    sections:{'Home 1':[['Unlock, lights on',0,1],['Buyer photos of the kitchen',1,1],['Buyers liked it',0,1]],'Home 2':[['Unlock, lights on',0,1],['Buyer photos',1,0],['Note: backyard too small',0,0]],'Home 3':[['Unlock, lights on',0,0],['Buyer photos',1,0],['Buyers liked it',0,0]],'After':[['Send notes to the buyers',0,0],['Ask listing agents for disclosures',0,0]]},
+    note:'Buyers want 4 bedrooms in Eden or Liberty.', finish:'Finish + send notes to buyers', sent:'Sent! The Garcias got photos and notes for all 3 homes.'},
+  custLabel:'Buyer portal',
+  customer:{mode:'deal', title:'Your home purchase', sub:'Summit Peak Realty for the Garcia family', days:18, home:'Ridgeline home, Eden (sample)',
+    deadlines:[['Seller disclosures','Oct 24','done'],['Due diligence','Nov 6','soon'],['Financing + appraisal','Nov 13',''],['Settlement (closing)','Nov 25','']],
+    docs:['Addendum 1: repair items','Due diligence checklist'], showings:[['Sat 10:00','Second look at the Eden home']]},
+  why:'Leads from your website and open houses, deal deadlines, showing notes, and a buyer portal with a countdown to closing.'},
+
 maker:{ name:'Juniper & Stone Jewelry', short:'J&S', kind:'Jewelry studio', accent:'#6B3E5E', owner:'June', label:'Artist / maker',
   nav:[['Today',''],['Commissions','5'],['Orders',''],['Inventory',''],['Materials','2'],['Markets',''],['Customers',''],['Settings','']],
   tiles:[['5','Commissions in progress','2 waiting on approval'],['2','Ship this week','Ring for Ellie, Fri'],['3','New inquiries','Instagram + website',1],['1','Market Saturday','Ogden Farmers Market']],
@@ -371,12 +391,12 @@ maker:{ name:'Juniper & Stone Jewelry', short:'J&S', kind:'Jewelry studio', acce
     cta:'Approve design + pay deposit', done:'Approved! Your deposit is paid and June starts on your ring.'},
   why:'Commissions with design approvals and deposits, materials cost, inventory and market days.'}
 };
-const ORDER = ['service','cleaning','homewatch','inspector','landscaping','grooming','salon','maker'];
+const ORDER = ['service','cleaning','homewatch','inspector','landscaping','grooming','salon','realtor','maker'];
 const VIEWS = [['desk',"Owner's desk"],['phone','phone'],['cust','cust']];
 
 const S = {};
 function initState(b){
-  const s = { nav:0, off:{}, feat:{}, added:[], stock:[], addOpen:'', team:'all', sec:Object.keys(b.phone.sections)[0], phone:{}, sent:false, filter:'all', cust:{}, done:false, sig:'' };
+  const s = { nav:0, off:{}, feat:{}, added:[], stock:[], leads:(b.leads||[]).slice(), signed:{}, addOpen:'', team:'all', sec:Object.keys(b.phone.sections)[0], phone:{}, sent:false, filter:'all', cust:{}, done:false, sig:'' };
   for (const [k, xs] of Object.entries(b.phone.sections)) s.phone[k] = xs.map(x => x[2]);
   const c = b.customer;
   if (c.mode === 'book') c.groups.forEach((g, i) => {
@@ -403,8 +423,8 @@ const featOf = t => { t = String(t).toLowerCase();
   if (/recurring|auto-billed|repeat/.test(t)) return 'recurring';
   return null; };
 let SAVED = {}; try { SAVED = JSON.parse(localStorage.getItem('portals-demo-state') || '{}') || {}; } catch (e) { SAVED = {}; }
-function persist(){ const o = {}; for (const [id, x] of Object.entries(S)) o[id] = { feat:x.feat, added:x.added, stock:x.stock }; try { localStorage.setItem('portals-demo-state', JSON.stringify(o)); } catch (e) {} }
-const st = id => { if (!S[id]) { S[id] = initState(B[id]); const sv = SAVED[id]; if (sv) { Object.assign(S[id].feat, sv.feat || {}); S[id].added = sv.added || []; S[id].stock = sv.stock || []; } } return S[id]; };
+function persist(){ const o = {}; for (const [id, x] of Object.entries(S)) o[id] = { feat:x.feat, added:x.added, stock:x.stock, leads:x.leads }; try { localStorage.setItem('portals-demo-state', JSON.stringify(o)); } catch (e) {} }
+const st = id => { if (!S[id]) { S[id] = initState(B[id]); const sv = SAVED[id]; if (sv) { Object.assign(S[id].feat, sv.feat || {}); S[id].added = sv.added || []; S[id].stock = sv.stock || []; if (sv.leads) S[id].leads = sv.leads; } } return S[id]; };
 const has = (s, f) => !f || s.feat[f] !== false;
 const allItems = (b, s) => b.items.concat(s.added);
 const LOCK = 'service';
@@ -457,8 +477,16 @@ function renderSection(b, s){
   const label = b.nav[s.nav][0], L = label.toLowerCase();
   const back = `<button type="button" class="btn ghost" data-act="nav" data-v="0">← Back to Today</button>`;
   let body = '';
-  if (/text|message|waitlist|inquir/.test(L)) body = `<section class="panel"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Reply</button></div>`).join('')}</section>`;
-  else if (/suppl|equipment|material|product|vaccine|permit|open items|stock/.test(L)) body = `<section class="panel"><h2>${esc(b.side.title)}</h2>${b.side.rows.concat(s.stock).map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}${s.addOpen==='stock'?stockForm():`<button type="button" class="btn" style="align-self:flex-start" data-act="openAdd" data-v="stock">+ Add</button>`}</section>`;
+  if (/website/.test(L)) body = `<section class="panel"><h2>How your website connects</h2>
+    <div class="rowx"><span><strong>1. Contact and "Request a showing" forms</strong><small>The forms on your website send people straight here, marked "Website." No copying from email.</small></span></div>
+    <div class="rowx"><span><strong>2. Your listing search</strong><small>The home search on your site (from your broker or MLS) has an "Ask about this home" button. The lead lands here with that home attached.</small></span></div>
+    <div class="rowx"><span><strong>3. Instant text back</strong><small>Within a minute the lead gets a text from you, and they go on your follow-up list so no one slips through.</small></span></div></section>
+    <section class="panel"><h2>Leads</h2><div style="overflow-x:auto"><table class="sec-table"><thead><tr><th>Name</th><th>What they want</th><th>Came from</th><th>Status</th></tr></thead><tbody>${s.leads.map(l=>`<tr><td><strong>${esc(l[0])}</strong></td><td>${esc(l[1])}</td><td><span class="bdg" style="background:${l[2]==='Website'?'#E3EBF3':'#EDE8DC'};color:${l[2]==='Website'?'#24486B':'#3A4448'}">${esc(l[2])}</span></td><td>${esc(l[3])}</td></tr>`).join('')}</tbody></table></div></section>`;
+  else if (/open house/.test(L)) body = `<section class="panel"><h2>Open house sign-in</h2><p style="margin:0;color:var(--muted)">Visitors sign in on your phone or a tablet at the door. Each one goes straight to your leads.</p>
+    <div class="addf" role="group" aria-label="Sign in"><label>Name<input id="oName" placeholder="Visitor name" autocomplete="off"></label><label>What are they looking for?<input id="oWant" placeholder="3 bed in Eden"></label><label>Working with an agent?<select id="oAgent"><option>No</option><option>Yes</option></select></label><div style="display:flex;align-items:flex-end"><button type="button" class="btn" data-act="saveOpen">Sign in</button></div></div>
+    ${s.leads.filter(l=>l[2]==='Open house').map(l=>`<div class="rowx"><span><strong>${esc(l[0])}</strong><small>${esc(l[1])}</small></span><span class="bdg" style="background:#EDE8DC;color:#3A4448">${esc(l[3])}</span></div>`).join('')}</section>`;
+  else if (/text|message|waitlist|inquir/.test(L)) body = `<section class="panel"><h2>${esc(b.side2.title)}</h2>${b.side2.rows.map(r=>`<div class="rowx"><span><strong>${esc(r[0])}</strong><small>${esc(r[1])}</small></span><button type="button" class="lnk">Reply</button></div>`).join('')}</section>`;
+  else if (/suppl|equipment|material|product|vaccine|permit|open items|stock|deal/.test(L)) body = `<section class="panel"><h2>${esc(b.side.title)}</h2>${b.side.rows.concat(s.stock).map(r=>`<div class="rowx"><span>${esc(r[0])}</span>${lvlBadge(r[2],r[1])}</div>`).join('')}${s.addOpen==='stock'?stockForm():`<button type="button" class="btn" style="align-self:flex-start" data-act="openAdd" data-v="stock">+ Add</button>`}</section>`;
   else if (/checklist|formula/.test(L)) body = Object.entries(b.phone.sections).map(([k,xs])=>`<section class="panel"><h2>${esc(k)}</h2>${xs.map(x=>`<div class="rowx"><span>${esc(x[0])}</span>${x[1]?'<span class="bdg" style="background:#FFF3CC;color:#6E4D00">Photo needed</span>':''}</div>`).join('')}</section>`).join('') + `<button type="button" class="btn" style="align-self:flex-start">+ New checklist</button>`;
   else if (/setting/.test(L)) body = `<section class="panel"><h2>Your features</h2>${['Reminder texts','Online booking + quotes','Review requests','Card payments + auto-charge','Customer portal','Crew phones'].map((f,i)=>{const on=!(s.off||{})[i];return `<div class="sw"><span>${f}</span><button type="button" class="chip" data-act="toggle" data-v="${i}" aria-pressed="${on}" style="${on?`background:${b.accent};border-color:${b.accent};color:#fff`:''}">${on?'On':'Off'}</button></div>`}).join('')}</section>`;
   else {
@@ -530,6 +558,14 @@ function renderCust(b, s){
       <label class="grp" for="sig"><span>Type your name to sign</span><input id="sig" class="sig" data-act="sig" value="${esc(s.sig)}" placeholder="Your name" autocomplete="name"></label>`;
     foot = `${s.done?`<span class="ok">${esc(c.done)}</span>`:''}<button type="button" class="big" data-act="book">${esc(c.cta)}</button>`;
   }
+  if (c.mode === 'deal') {
+    const lv = d => d==='done' ? ['#E3F1E7','#1F5C38','✓ Done'] : d==='soon' ? ['#FFF3CC','#6E4D00','Coming up'] : ['#EDEAE3','#55605F','Later'];
+    body = `<div style="background:${a};color:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700;opacity:.9">Days to closing</span><b style="font-family:var(--display);font-size:44px;line-height:1">${c.days}</b><span style="font-size:14px">${esc(c.home)}</span></div>
+      <div class="grp"><span>Your deadlines</span>${c.deadlines.map(d=>{const x=lv(d[2]);return `<div class="lrow"><span class="bdg" style="background:${x[0]};color:${x[1]}">${x[2]}</span><span style="flex:1">${esc(d[0])}</span><strong>${esc(d[1])}</strong></div>`}).join('')}</div>
+      <div class="grp"><span>To sign</span>${c.docs.map((d,j)=>`<div class="lrow"><span style="flex:1">${esc(d)}</span><button type="button" class="lnk" data-act="signdoc" data-i="${j}" style="${s.signed[j]?'background:#E3F1E7;border-color:#2E7D4F;color:#1F5C38':''}">${s.signed[j]?'Signed ✓':'Sign'}</button></div>`).join('')}</div>
+      <div class="grp"><span>Showings</span>${c.showings.map(x=>`<div class="lrow"><strong>${esc(x[0])}</strong><span style="flex:1">${esc(x[1])}</span></div>`).join('')}</div>`;
+    foot = `<button type="button" class="big" style="background:${a}">Text Jenna</button>`;
+  }
   if (c.mode === 'report') {
     const n = l => c.list.filter(x => x[0]===l).length;
     const alertBox = (l, x) => `<div class="alert" style="border-color:${LV[l].bd}"><div class="ah" style="background:${LV[l].bg};color:${LV[l].fg}">${LV[l].t}</div><div class="ab"><div class="ph-photo">[photo]</div><strong>${esc(x[0])}</strong><span>${esc(x[1])}</span><div class="chips">${x[2].map((t,k)=>`<button type="button" class="lnk" style="${k===0?'background:#C2533F;border-color:#C2533F;color:#fff':''}">${esc(t)}</button>`).join('')}</div></div></div>`;
@@ -547,7 +583,7 @@ function renderCust(b, s){
       <div class="ph-body" style="gap:12px;padding:12px 14px">${body}</div>
       <div class="ph-foot">${foot}</div>
     </div></div>
-    <div class="side-note"><h3>${esc(b.custLabel)}</h3><p>${c.mode==='book'?'The page their customer opens from the website or a text. Tap the choices and watch the price change.':c.mode==='portal'?'The customer picks an option, signs with their name and pays the deposit, all from one link.':'The report goes out by email and in the portal the moment the visit is finished. Use the buttons to show only red, yellow or green items.'}</p><p>${esc(b.why)}</p><button type="button" class="btn ghost" data-act="reset">Start over</button></div></div>`;
+    <div class="side-note"><h3>${esc(b.custLabel)}</h3><p>${c.mode==='deal'?'Buyers open one link to see every deadline, sign papers and check their showings, so they stop texting "where are we at?"':c.mode==='book'?'The page their customer opens from the website or a text. Tap the choices and watch the price change.':c.mode==='portal'?'The customer picks an option, signs with their name and pays the deposit, all from one link.':'The report goes out by email and in the portal the moment the visit is finished. Use the buttons to show only red, yellow or green items.'}</p><p>${esc(b.why)}</p><button type="button" class="btn ghost" data-act="reset">Start over</button></div></div>`;
 }
 
 const $ = id => document.getElementById(id);
@@ -593,6 +629,8 @@ document.addEventListener('click', e => {
   else if (a === 'openAdd') s.addOpen = v || '';
   else if (a === 'saveAdd') { const nm = ($('fName').value || '').trim(); if (!nm) { $('fName').focus(); return; } s.added.push([($('fTime').value||'Any time').trim(), nm, ($('fWhere').value||'').trim() || '—', $('fType').value, $('fTeam').value, 0, 'New · just added']); s.addOpen = ''; persist(); }
   else if (a === 'saveStock') { const nm = ($('sName').value || '').trim(); if (!nm) { $('sName').focus(); return; } const l = $('sLvl').value; s.stock.push([nm, l==='g'?'Plenty':l==='y'?'Getting low':'Order now', l]); s.addOpen = ''; persist(); }
+  else if (a === 'signdoc') s.signed[i] = !s.signed[i];
+  else if (a === 'saveOpen') { const nm = ($('oName').value||'').trim(); if (!nm) { $('oName').focus(); return; } s.leads.unshift([nm, ($('oWant').value||'').trim() || 'Signed in at the open house', 'Open house', $('oAgent').value==='Yes' ? 'Has an agent' : 'New']); persist(); }
   else if (a === 'resetAll') { S[cur] = initState(b); persist(); }
   else if (a === 'sec') s.sec = v;
   else if (a === 'check') { s.phone[s.sec][i] = !s.phone[s.sec][i]; s.sent = false; }
